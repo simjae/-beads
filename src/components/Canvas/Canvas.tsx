@@ -1,8 +1,16 @@
-// components/organisms/Canvas.tsx
+"use client";
 import React, { FC } from "react";
 import { Icon } from "../Icon";
-
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 export const Canvas: FC = () => {
+  const {
+    control,
+    formState: { errors },
+    handleSubmit,
+    setValue,
+  } = useForm();
+
   return (
     <div className="bg-muted rounded-lg p-4 flex flex-col gap-4">
       <h3 className="font-semibold">Canvas</h3>
