@@ -4,18 +4,9 @@ import Link from "next/link";
 import { Icon } from "@components/Icon";
 import { Button } from "@components/Button";
 
-interface HeaderProps {
-  onFileUpload: (file: File) => void;
-}
+interface HeaderProps {}
 
-export const Header: FC<HeaderProps> = ({ onFileUpload }) => {
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      onFileUpload(file);
-    }
-  };
-
+export const Header: FC<HeaderProps> = () => {
   return (
     <header className="bg-background border-b shadow-sm px-4 py-3 flex items-center justify-between">
       <Link
@@ -32,13 +23,6 @@ export const Header: FC<HeaderProps> = ({ onFileUpload }) => {
           <label htmlFor="file-upload" className="cursor-pointer">
             Upload Image
           </label>
-          <input
-            id="file-upload"
-            type="file"
-            accept="image/*"
-            onChange={handleFileUpload}
-            style={{ display: "none" }}
-          />
         </Button>
         <Button>
           <Icon type="save" className="w-4 h-4 mr-2" />
