@@ -26,9 +26,17 @@ const DropZone: React.FC = () => {
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
   return (
-    <div {...getRootProps({ className: "dropzone" })}>
+    <div
+      {...getRootProps({
+        className: "dropzone bg-muted rounded-lg p-4 flex flex-col gap-4",
+      })}
+    >
+      <h3 className="font-semibold">Image Preview</h3>
+      <div className="aspect-square bg-muted-foreground/10 rounded-md flex items-center justify-center"></div>
       <input {...getInputProps()} />
-      <p>업로드된 이미지들이 여기에 표시됩니다. 위치와 크기를 조정하세요.</p>
+      <p className="text-muted-foreground text-sm">
+        Drag and drop your image onto the canvas to position it.
+      </p>
     </div>
   );
 };
