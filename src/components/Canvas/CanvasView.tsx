@@ -181,6 +181,25 @@ const CanvasView: React.FC = () => {
     resizingRef.current.corner = null;
   };
 
+  const drawGrid = (context, canvasWidth, canvasHeight, gridSize = 20) => {
+    context.strokeStyle = "#ddd";
+    context.lineWidth = 0.5;
+
+    for (let x = 0; x <= canvasWidth; x += gridSize) {
+      context.beginPath();
+      context.moveTo(x, 0);
+      context.lineTo(x, canvasHeight);
+      context.stroke();
+    }
+
+    for (let y = 0; y <= canvasHeight; y += gridSize) {
+      context.beginPath();
+      context.moveTo(0, y);
+      context.lineTo(canvasWidth, y);
+      context.stroke();
+    }
+  };
+
   const draw = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -188,27 +207,28 @@ const CanvasView: React.FC = () => {
     const context = canvas.getContext("2d");
     context.clearRect(0, 0, canvas.width, canvas.height);
 
+    // 그리드 그리기
+    drawGrid(context, canvas.width, canvas.height);
+
     uploadedImages.forEach((img) => {
       const image = new Image();
       image.src = img.src;
-      image.onload = () => {
-        context.drawImage(image, img.x, img.y, img.width, img.height);
+      context.drawImage(image, img.x, img.y, img.width, img.height);
 
-        if (img.isSelected) {
-          // 선택된 이미지에 리사이징 핸들 그리기
-          context.fillStyle = "blue";
-          const corners = [
-            { x: img.x - 5, y: img.y - 5 },
-            { x: img.x + img.width - 5, y: img.y - 5 },
-            { x: img.x - 5, y: img.y + img.height - 5 },
-            { x: img.x + img.width - 5, y: img.y + img.height - 5 },
-          ];
+      if (img.isSelected) {
+        // 선택된 이미지에 리사이징 핸들 그리기
+        context.fillStyle = "blue";
+        const corners = [
+          { x: img.x - 5, y: img.y - 5 },
+          { x: img.x + img.width - 5, y: img.y - 5 },
+          { x: img.x - 5, y: img.y + img.height - 5 },
+          { x: img.x + img.width - 5, y: img.y + img.height - 5 },
+        ];
 
-          corners.forEach((corner) => {
-            context.fillRect(corner.x, corner.y, 10, 10);
-          });
-        }
-      };
+        corners.forEach((corner) => {
+          context.fillRect(corner.x, corner.y, 10, 10);
+        });
+      }
     });
   };
 
@@ -246,20 +266,27 @@ const CanvasView: React.FC = () => {
           gridTemplateColumns: `repeat(${cols}, ${blockSize}px)`,
         }}
       >
-        {Array.from({ length: rows }).map((_, row) =>
-          Array.from({ length: cols }).map((_, col) => {
-            const pixelIndex =
-              (row * blockSize * previewData.width + col * blockSize) * 4;
-            const r = previewData.data[pixelIndex];
-            const g = previewData.data[pixelIndex + 1];
-            const b = previewData.data[pixelIndex + 2];
+        {Array.from({ length: rows }).map((_, rowIndex) =>
+          Array.from({ length: cols }).map((_, colIndex) => {
+            const x = colIndex * blockSize;
+            const y = rowIndex * blockSize;
+            const index = (y * previewData.width + x) * 4;
+
+            const r = previewData.data[index];
+            const g = previewData.data[index + 1];
+            const b = previewData.data[index + 2];
+            const a = previewData.data[index + 3] / 255;
+
+            const color = `rgba(${r},${g},${b},${a})`;
+
             return (
               <div
-                key={`${row}-${col}`}
+                key={`${rowIndex}-${colIndex}`}
                 style={{
                   width: blockSize,
                   height: blockSize,
-                  backgroundColor: `rgb(${r}, ${g}, ${b})`,
+                  backgroundColor: color,
+                  border: "1px solid #ddd", // 그리드 선 그리기
                 }}
               />
             );
