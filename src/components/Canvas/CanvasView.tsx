@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 
 const CanvasView: React.FC = () => {
   const [uploadedImages, setUploadedImages] = useState<
@@ -263,47 +264,59 @@ const CanvasView: React.FC = () => {
   const renderPreview = () => {
     if (!previewData) return null;
 
-    const blockSize = 10; // 블록 크기 설정
-    const rows = Math.ceil(previewData.height / blockSize);
+    const blockSize = 20; // 블록 크기 설정
     const cols = Math.ceil(previewData.width / blockSize);
+    const rows = Math.ceil(previewData.height / blockSize);
 
     return (
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: `repeat(${cols}, ${blockSize}px)`,
-          gridTemplateRows: `repeat(${rows}, ${blockSize}px)`,
-        }}
+      <TransformWrapper
+        initialScale={1}
+        initialPositionX={0}
+        initialPositionY={0}
+        wheel={{ step: 0.1 }}
+        pinch={{ step: 0.1 }}
+        doubleClick={{ mode: "reset" }}
+        minScale={0.1} // 이 부분을 추가하여 축소 한계를 설정합니다.
       >
-        {Array.from({ length: rows }).map((_, rowIndex) =>
-          Array.from({ length: cols }).map((_, colIndex) => {
-            const x = colIndex * blockSize;
-            const y = rowIndex * blockSize;
-            const index = (y * previewData.width + x) * 4;
+        <TransformComponent>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: `repeat(${cols}, ${blockSize}px)`,
+              gridTemplateRows: `repeat(${rows}, ${blockSize}px)`,
+            }}
+          >
+            {Array.from({ length: rows }).map((_, rowIndex) =>
+              Array.from({ length: cols }).map((_, colIndex) => {
+                const x = colIndex * blockSize;
+                const y = rowIndex * blockSize;
+                const index = (y * previewData.width + x) * 4;
 
-            const r = previewData.data[index];
-            const g = previewData.data[index + 1];
-            const b = previewData.data[index + 2];
-            const a = previewData.data[index + 3] / 255;
+                const r = previewData.data[index];
+                const g = previewData.data[index + 1];
+                const b = previewData.data[index + 2];
+                const a = previewData.data[index + 3] / 255;
 
-            const color = `rgba(${r},${g},${b},${a})`;
+                const color = `rgba(${r},${g},${b},${a})`;
 
-            return (
-              <div
-                key={`${rowIndex}-${colIndex}`}
-                onClick={() => handleBlockClick(colIndex, rowIndex)}
-                style={{
-                  width: blockSize,
-                  height: blockSize,
-                  backgroundColor: color,
-                  border: "1px solid #ddd", // 그리드 선 그리기
-                  cursor: "pointer",
-                }}
-              />
-            );
-          })
-        )}
-      </div>
+                return (
+                  <div
+                    key={`${rowIndex}-${colIndex}`}
+                    onClick={() => handleBlockClick(colIndex, rowIndex)}
+                    style={{
+                      width: blockSize,
+                      height: blockSize,
+                      backgroundColor: color,
+                      border: "1px solid #ddd", // 그리드 선 그리기
+                      cursor: "pointer",
+                    }}
+                  />
+                );
+              })
+            )}
+          </div>
+        </TransformComponent>
+      </TransformWrapper>
     );
   };
 
