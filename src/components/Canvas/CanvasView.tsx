@@ -2,6 +2,15 @@ import React, { useState, useRef, useEffect } from "react";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 
 const CanvasView: React.FC = () => {
+  const [canvasWidth, setCanvasWidth] = useState(800);
+  const [canvasHeight, setCanvasHeight] = useState(600);
+  const [gridSize, setGridSize] = useState(20);
+  const [gridColor, setGridColor] = useState("#ddd");
+  const [imageOpacity, setImageOpacity] = useState(1);
+  const [minScaleToShowBlocks, setMinScaleToShowBlocks] = useState(0.5);
+  const [zoomSpeed, setZoomSpeed] = useState(0.1);
+  const [draggingEnabled, setDraggingEnabled] = useState(true);
+
   const [uploadedImages, setUploadedImages] = useState<
     {
       id: number;
@@ -21,12 +30,35 @@ const CanvasView: React.FC = () => {
     x: number;
     y: number;
   } | null>(null);
+  const [currentScale, setCurrentScale] = useState(1);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const selectedImageRef = useRef<number | null>(null);
   const dragStartPosRef = useRef<{ x: number; y: number } | null>(null);
   const resizingRef = useRef<{ corner: string | null }>({ corner: null });
 
-  const gridSize = 20; // 블록 크기 정의
+  useEffect(() => {
+    // URL에서 줌 및 위치 정보를 가져오기
+    const params = new URLSearchParams(window.location.search);
+    const zoomParam = params.get("zoom");
+    const xParam = params.get("x");
+    const yParam = params.get("y");
+
+    if (zoomParam) setCurrentScale(parseFloat(zoomParam));
+    if (xParam && yParam)
+      setPosition({ x: parseFloat(xParam), y: parseFloat(yParam) });
+  }, []);
+
+  const updateUrl = (zoom: number, x: number, y: number) => {
+    const params = new URLSearchParams(window.location.search);
+    params.set("zoom", zoom.toString());
+    params.set("x", x.toString());
+    params.set("y", y.toString());
+
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    window.history.replaceState({}, "", newUrl);
+  };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -36,11 +68,6 @@ const CanvasView: React.FC = () => {
       image.src = imageUrl;
 
       image.onload = () => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-
-        const canvasWidth = canvas.width;
-        const canvasHeight = canvas.height;
         const aspectRatio = image.width / image.height;
 
         let newWidth = canvasWidth / 2;
@@ -72,7 +99,9 @@ const CanvasView: React.FC = () => {
     }
   };
 
-  const handleMouseDown = (e) => {
+  const handleMouseDown = (e: any) => {
+    if (!draggingEnabled) return;
+
     const { offsetX, offsetY } = e.nativeEvent;
     selectedImageRef.current = null;
     resizingRef.current.corner = null;
@@ -134,7 +163,9 @@ const CanvasView: React.FC = () => {
     }
   };
 
-  const handleMouseMove = (e) => {
+  const handleMouseMove = (e: any) => {
+    if (!draggingEnabled) return;
+
     const { offsetX, offsetY } = e.nativeEvent;
 
     if (selectedImageRef.current !== null) {
@@ -190,8 +221,13 @@ const CanvasView: React.FC = () => {
     resizingRef.current.corner = null;
   };
 
-  const drawGrid = (context, canvasWidth, canvasHeight, gridSize = 20) => {
-    context.strokeStyle = "#ddd";
+  const drawGrid = (
+    context: any,
+    canvasWidth: any,
+    canvasHeight: any,
+    gridSize = 20
+  ) => {
+    context.strokeStyle = gridColor;
     context.lineWidth = 0.5;
 
     for (let x = 0; x <= canvasWidth; x += gridSize) {
@@ -214,7 +250,7 @@ const CanvasView: React.FC = () => {
     if (!canvas) return;
 
     const context = canvas.getContext("2d");
-    context.clearRect(0, 0, canvas.width, canvas.height);
+    context?.clearRect(0, 0, canvas.width, canvas.height);
 
     // 그리드 그리기
     drawGrid(context, canvas.width, canvas.height);
@@ -222,7 +258,11 @@ const CanvasView: React.FC = () => {
     uploadedImages.forEach((img) => {
       const image = new Image();
       image.src = img.src;
-      context.drawImage(image, img.x, img.y, img.width, img.height);
+      image.onload = () => {
+        context.globalAlpha = imageOpacity;
+        context.drawImage(image, img.x, img.y, img.width, img.height);
+        context.globalAlpha = 1;
+      };
 
       if (img.isSelected) {
         // 선택된 이미지에 리사이징 핸들 그리기
@@ -243,7 +283,7 @@ const CanvasView: React.FC = () => {
 
   useEffect(() => {
     draw();
-  }, [uploadedImages]);
+  }, [uploadedImages, gridSize, gridColor, imageOpacity]);
 
   const handleSave = () => {
     const canvas = canvasRef.current;
@@ -265,7 +305,7 @@ const CanvasView: React.FC = () => {
     }
   };
 
-  const handlePreviewClick = (e) => {
+  const handlePreviewClick = (e: any) => {
     if (!previewData) return;
 
     const rect = e.currentTarget.getBoundingClientRect();
@@ -290,17 +330,28 @@ const CanvasView: React.FC = () => {
 
     return (
       <TransformWrapper
-        initialScale={1}
-        initialPositionX={0}
-        initialPositionY={0}
-        wheel={{ step: 0.1 }}
-        pinch={{ step: 0.1 }}
+        initialScale={currentScale}
+        initialPositionX={position.x}
+        initialPositionY={position.y}
+        wheel={{ step: zoomSpeed }}
+        pinch={{ step: zoomSpeed }}
         doubleClick={{ mode: "reset" }}
         minScale={0.1}
+        onZoom={(zoom) => {
+          setCurrentScale(zoom.state.scale);
+          updateUrl(
+            zoom.state.scale,
+            zoom.state.positionX,
+            zoom.state.positionY
+          );
+        }}
+        onPanningStop={(e) => {
+          updateUrl(currentScale, e.state.positionX, e.state.positionY);
+        }}
       >
         <TransformComponent>
           <div
-            onClick={handlePreviewClick} // 클릭 이벤트 추가
+            onClick={handlePreviewClick}
             style={{
               position: "relative",
               backgroundImage: `url(${previewData.toDataURL()})`,
@@ -310,7 +361,39 @@ const CanvasView: React.FC = () => {
               height: previewData.height,
               cursor: "pointer",
             }}
-          />
+          >
+            {currentScale >= minScaleToShowBlocks && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  height: "100%",
+                  display: "grid",
+                  gridTemplateColumns: `repeat(auto-fill, minmax(${gridSize}px, 1fr))`,
+                  gridTemplateRows: `repeat(auto-fill, minmax(${gridSize}px, 1fr))`,
+                  pointerEvents: "none",
+                }}
+              >
+                {Array.from({
+                  length: Math.ceil(previewData.width / gridSize),
+                }).map((_, colIndex) =>
+                  Array.from({
+                    length: Math.ceil(previewData.height / gridSize),
+                  }).map((_, rowIndex) => (
+                    <div
+                      key={`${colIndex}-${rowIndex}`}
+                      style={{
+                        border: "1px solid rgba(0, 0, 0, 0.1)",
+                        pointerEvents: "none",
+                      }}
+                    />
+                  ))
+                )}
+              </div>
+            )}
+          </div>
         </TransformComponent>
       </TransformWrapper>
     );
@@ -319,22 +402,93 @@ const CanvasView: React.FC = () => {
   return (
     <div className="bg-muted rounded-lg p-4 flex flex-col gap-4 relative w-full h-full">
       <h3 className="font-semibold">Canvas</h3>
+      <div className="flex flex-col gap-2">
+        <div>
+          <label>캔버스 너비: </label>
+          <input
+            type="number"
+            value={canvasWidth}
+            onChange={(e) => setCanvasWidth(parseInt(e.target.value))}
+          />
+        </div>
+        <div>
+          <label>캔버스 높이: </label>
+          <input
+            type="number"
+            value={canvasHeight}
+            onChange={(e) => setCanvasHeight(parseInt(e.target.value))}
+          />
+        </div>
+        <div>
+          <label>그리드 크기: </label>
+          <input
+            type="number"
+            value={gridSize}
+            onChange={(e) => setGridSize(parseInt(e.target.value))}
+          />
+        </div>
+        <div>
+          <label>그리드 색상: </label>
+          <input
+            type="color"
+            value={gridColor}
+            onChange={(e) => setGridColor(e.target.value)}
+          />
+        </div>
+        <div>
+          <label>이미지 투명도: </label>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.1"
+            value={imageOpacity}
+            onChange={(e) => setImageOpacity(parseFloat(e.target.value))}
+          />
+        </div>
+        <div>
+          <label>블록을 보여줄 최소 줌 레벨: </label>
+          <input
+            type="number"
+            step="0.1"
+            value={minScaleToShowBlocks}
+            onChange={(e) =>
+              setMinScaleToShowBlocks(parseFloat(e.target.value))
+            }
+          />
+        </div>
+        <div>
+          <label>줌 속도: </label>
+          <input
+            type="number"
+            step="0.01"
+            value={zoomSpeed}
+            onChange={(e) => setZoomSpeed(parseFloat(e.target.value))}
+          />
+        </div>
+        <div>
+          <label>드래그 활성화 여부: </label>
+          <input
+            type="checkbox"
+            checked={draggingEnabled}
+            onChange={(e) => setDraggingEnabled(e.target.checked)}
+          />
+        </div>
+      </div>
       <input type="file" accept="image/*" onChange={handleImageUpload} />
       <div
         className="relative bg-muted-foreground/10 rounded-md border-2 border-dashed border-muted-foreground/20"
         style={{
-          width: "100%",
-          height: "100%",
-          maxWidth: "800px",
-          maxHeight: "600px",
+          width: canvasWidth,
+          height: canvasHeight,
           overflow: "hidden",
           position: "relative",
         }}
       >
         <canvas
           ref={canvasRef}
-          width={800}
-          height={600}
+          width={canvasWidth}
+          height={canvasHeight}
           style={{
             backgroundColor: "white",
             touchAction: "none",
