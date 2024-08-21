@@ -1,7 +1,4 @@
-import React, { useState, useRef } from "react";
-import Draggable from "react-draggable";
-import { Resizable } from "re-resizable";
-import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
+import React, { useState, useRef, useEffect } from "react";
 
 const CanvasView: React.FC = () => {
   const [uploadedImages, setUploadedImages] = useState<
@@ -12,13 +9,14 @@ const CanvasView: React.FC = () => {
       y: number;
       width: number;
       height: number;
+      isSelected: boolean;
     }[]
   >([]);
   const [nextId, setNextId] = useState(0);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  const [isDragging, setIsDragging] = useState(false); // 드래깅 상태 관리
-  const [isResizing, setIsResizing] = useState(false); // 리사이징 상태 관리
+  const selectedImageRef = useRef<number | null>(null);
+  const dragStartPosRef = useRef<{ x: number; y: number } | null>(null);
+  const resizingRef = useRef<{ corner: string | null }>({ corner: null });
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -56,6 +54,7 @@ const CanvasView: React.FC = () => {
             y: newY,
             width: newWidth,
             height: newHeight,
+            isSelected: false,
           },
         ]);
         setNextId((id) => id + 1);
@@ -63,14 +62,154 @@ const CanvasView: React.FC = () => {
     }
   };
 
-  const handleUpdateImage = (
-    id: number,
-    newProps: Partial<{ x: number; y: number; width: number; height: number }>
-  ) => {
-    setUploadedImages((prevImages) =>
-      prevImages.map((img) => (img.id === id ? { ...img, ...newProps } : img))
-    );
+  const handleMouseDown = (e) => {
+    const { offsetX, offsetY } = e.nativeEvent;
+    selectedImageRef.current = null;
+    resizingRef.current.corner = null;
+
+    for (let i = uploadedImages.length - 1; i >= 0; i--) {
+      const img = uploadedImages[i];
+
+      // 리사이징 핸들 클릭 확인
+      const corners = [
+        { name: "top-left", x: img.x - 5, y: img.y - 5 },
+        { name: "top-right", x: img.x + img.width - 5, y: img.y - 5 },
+        { name: "bottom-left", x: img.x - 5, y: img.y + img.height - 5 },
+        { name: "bottom-right", x: img.x + img.width - 5, y: img.y + img.height - 5 },
+      ];
+
+      for (const corner of corners) {
+        if (
+          offsetX > corner.x &&
+          offsetX < corner.x + 10 &&
+          offsetY > corner.y &&
+          offsetY < corner.y + 10
+        ) {
+          // 리사이징 핸들 클릭
+          selectedImageRef.current = img.id;
+          resizingRef.current.corner = corner.name;
+          return;
+        }
+      }
+
+      if (
+        offsetX > img.x &&
+        offsetX < img.x + img.width &&
+        offsetY > img.y &&
+        offsetY < img.y + img.height
+      ) {
+        // 이미지 클릭
+        selectedImageRef.current = img.id;
+        dragStartPosRef.current = { x: offsetX - img.x, y: offsetY - img.y };
+        setUploadedImages((prevImages) =>
+          prevImages.map((image) =>
+            image.id === img.id
+              ? { ...image, isSelected: true }
+              : { ...image, isSelected: false }
+          )
+        );
+        return;
+      }
+    }
+
+    if (selectedImageRef.current === null) {
+      // 클릭이 이미지 영역 외부인 경우 선택 해제
+      setUploadedImages((prevImages) =>
+        prevImages.map((image) => ({ ...image, isSelected: false }))
+      );
+    }
   };
+
+  const handleMouseMove = (e) => {
+    const { offsetX, offsetY } = e.nativeEvent;
+
+    if (selectedImageRef.current !== null) {
+      setUploadedImages((prevImages) =>
+        prevImages.map((img) => {
+          if (img.id === selectedImageRef.current) {
+            if (resizingRef.current.corner) {
+              // 리사이징 중
+              const newProps = { ...img };
+
+              switch (resizingRef.current.corner) {
+                case "top-left":
+                  newProps.width = img.width + (img.x - offsetX);
+                  newProps.height = img.height + (img.y - offsetY);
+                  newProps.x = offsetX;
+                  newProps.y = offsetY;
+                  break;
+                case "top-right":
+                  newProps.width = offsetX - img.x;
+                  newProps.height = img.height + (img.y - offsetY);
+                  newProps.y = offsetY;
+                  break;
+                case "bottom-left":
+                  newProps.width = img.width + (img.x - offsetX);
+                  newProps.height = offsetY - img.y;
+                  newProps.x = offsetX;
+                  break;
+                case "bottom-right":
+                  newProps.width = offsetX - img.x;
+                  newProps.height = offsetY - img.y;
+                  break;
+                default:
+                  break;
+              }
+
+              return newProps;
+            } else if (dragStartPosRef.current) {
+              // 드래그 중
+              const newX = offsetX - dragStartPosRef.current.x;
+              const newY = offsetY - dragStartPosRef.current.y;
+              return { ...img, x: newX, y: newY };
+            }
+          }
+          return img;
+        })
+      );
+    }
+  };
+
+  const handleMouseUp = () => {
+    selectedImageRef.current = null;
+    dragStartPosRef.current = null;
+    resizingRef.current.corner = null;
+  };
+
+  const draw = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const context = canvas.getContext("2d");
+    context.clearRect(0, 0, canvas.width, canvas.height);
+
+    uploadedImages.forEach((img) => {
+      const image = new Image();
+      image.src = img.src;
+      image.onload = () => {
+        context.drawImage(image, img.x, img.y, img.width, img.height);
+
+        if (img.isSelected) {
+          // 선택된 이미지에 리사이징 핸들 그리기
+          context.fillStyle = "blue";
+          const corners = [
+            { x: img.x - 5, y: img.y - 5 },
+            { x: img.x + img.width - 5, y: img.y - 5 },
+            { x: img.x - 5, y: img.y + img.height - 5 },
+            { x: img.x + img.width - 5, y: img.y + img.height - 5 },
+          ];
+
+          corners.forEach((corner) => {
+            context.fillRect(corner.x, corner.y, 10, 10);
+          });
+        }
+      };
+    });
+  };
+
+  useEffect(() => {
+    draw();
+  }, [uploadedImages]);
 
   return (
     <div className="bg-muted rounded-lg p-4 flex flex-col gap-4 relative w-full h-full">
@@ -81,92 +220,25 @@ const CanvasView: React.FC = () => {
         style={{
           width: "100%",
           height: "100%",
-          maxWidth: "800px", // 고정된 최대 캔버스 너비
-          maxHeight: "600px", // 고정된 최대 캔버스 높이
-          overflow: "hidden", // 캔버스 영역 밖은 보이지 않게
+          maxWidth: "800px",
+          maxHeight: "600px",
+          overflow: "hidden",
           position: "relative",
         }}
       >
-        <TransformWrapper
-          initialScale={1}
-          initialPositionX={0}
-          initialPositionY={0}
-          wheel={{ step: 0.1 }} // 마우스 휠로 줌 인/아웃
-          pinch={{ step: 0.1 }} // 터치 패드 핀치 줌
-          doubleClick={{ mode: "reset" }} // 더블 클릭으로 줌 리셋
-          panning={{ disabled: isDragging || isResizing }} // 드래그, 리사이징 시 panning 비활성화
-        >
-          <TransformComponent>
-            <div
-              style={{ position: "relative", width: "100%", height: "100%" }}
-            >
-              <canvas
-                ref={canvasRef}
-                width={800} // 캔버스 너비 설정
-                height={600} // 캔버스 높이 설정
-                style={{
-                  backgroundColor: "white",
-                  touchAction: "none", // 모바일에서 터치 지원
-                }}
-              />
-              {uploadedImages.map((img) => (
-                <Draggable
-                  key={img.id}
-                  position={{ x: img.x, y: img.y }}
-                  onStart={() => setIsDragging(true)}
-                  onStop={(e, data) => {
-                    handleUpdateImage(img.id, { x: data.x, y: data.y });
-                    setIsDragging(false);
-                  }}
-                  bounds="parent"
-                >
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: img.y,
-                      left: img.x,
-                      width: img.width,
-                      height: img.height,
-                    }}
-                  >
-                    <Resizable
-                      size={{ width: img.width, height: img.height }}
-                      onResizeStart={() => setIsResizing(true)}
-                      onResizeStop={(e, direction, ref, d) => {
-                        handleUpdateImage(img.id, {
-                          width: img.width + d.width,
-                          height: img.height + d.height,
-                        });
-                        setIsResizing(false);
-                      }}
-                      enable={{
-                        top: true,
-                        right: true,
-                        bottom: true,
-                        left: true,
-                        topRight: true,
-                        bottomRight: true,
-                        bottomLeft: true,
-                        topLeft: true,
-                      }}
-                    >
-                      <img
-                        src={img.src}
-                        alt="Uploaded"
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          pointerEvents: "none", // 드래그 문제 해결
-                        }}
-                        draggable={false} // 이미지 자체 드래그 방지
-                      />
-                    </Resizable>
-                  </div>
-                </Draggable>
-              ))}
-            </div>
-          </TransformComponent>
-        </TransformWrapper>
+        <canvas
+          ref={canvasRef}
+          width={800}
+          height={600}
+          style={{
+            backgroundColor: "white",
+            touchAction: "none",
+            cursor: resizingRef.current.corner ? "nwse-resize" : "default",
+          }}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+        />
       </div>
     </div>
   );
