@@ -14,7 +14,9 @@ const CanvasView: React.FC = () => {
     }[]
   >([]);
   const [nextId, setNextId] = useState(0);
-  const [previewData, setPreviewData] = useState<ImageData | null>(null);
+  const [previewData, setPreviewData] = useState<HTMLCanvasElement | null>(
+    null
+  );
   const [clickedBlockCoords, setClickedBlockCoords] = useState<{
     x: number;
     y: number;
@@ -23,6 +25,8 @@ const CanvasView: React.FC = () => {
   const selectedImageRef = useRef<number | null>(null);
   const dragStartPosRef = useRef<{ x: number; y: number } | null>(null);
   const resizingRef = useRef<{ corner: string | null }>({ corner: null });
+
+  const gridSize = 20; // 블록 크기 정의
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -244,29 +248,45 @@ const CanvasView: React.FC = () => {
   const handleSave = () => {
     const canvas = canvasRef.current;
     if (canvas) {
-      const context = canvas.getContext("2d");
-      if (context) {
-        const imageData = context.getImageData(
-          0,
-          0,
-          canvas.width,
-          canvas.height
-        );
-        setPreviewData(imageData);
+      const previewCanvas = document.createElement("canvas");
+      previewCanvas.width = canvas.width;
+      previewCanvas.height = canvas.height;
+      const previewContext = previewCanvas.getContext("2d");
+
+      if (previewContext) {
+        // 원본 이미지 그리기
+        previewContext.drawImage(canvas, 0, 0);
+
+        // 그리드 그리기
+        drawGrid(previewContext, canvas.width, canvas.height);
+
+        setPreviewData(previewCanvas);
       }
     }
   };
 
-  const handleBlockClick = (x: number, y: number) => {
-    setClickedBlockCoords({ x, y });
+  const handlePreviewClick = (e) => {
+    if (!previewData) return;
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const scaleX = previewData.width / rect.width;
+    const scaleY = previewData.height / rect.height;
+
+    const canvasX = Math.floor(x * scaleX);
+    const canvasY = Math.floor(y * scaleY);
+
+    // 블록 단위 좌표 계산
+    const blockX = Math.floor(canvasX / gridSize);
+    const blockY = Math.floor(canvasY / gridSize);
+
+    setClickedBlockCoords({ x: blockX, y: blockY });
   };
 
   const renderPreview = () => {
     if (!previewData) return null;
-
-    const blockSize = 20; // 블록 크기 설정
-    const cols = Math.ceil(previewData.width / blockSize);
-    const rows = Math.ceil(previewData.height / blockSize);
 
     return (
       <TransformWrapper
@@ -276,45 +296,21 @@ const CanvasView: React.FC = () => {
         wheel={{ step: 0.1 }}
         pinch={{ step: 0.1 }}
         doubleClick={{ mode: "reset" }}
-        minScale={0.1} // 이 부분을 추가하여 축소 한계를 설정합니다.
+        minScale={0.1}
       >
         <TransformComponent>
           <div
+            onClick={handlePreviewClick} // 클릭 이벤트 추가
             style={{
-              display: "grid",
-              gridTemplateColumns: `repeat(${cols}, ${blockSize}px)`,
-              gridTemplateRows: `repeat(${rows}, ${blockSize}px)`,
+              position: "relative",
+              backgroundImage: `url(${previewData.toDataURL()})`,
+              backgroundSize: "contain",
+              backgroundRepeat: "no-repeat",
+              width: previewData.width,
+              height: previewData.height,
+              cursor: "pointer",
             }}
-          >
-            {Array.from({ length: rows }).map((_, rowIndex) =>
-              Array.from({ length: cols }).map((_, colIndex) => {
-                const x = colIndex * blockSize;
-                const y = rowIndex * blockSize;
-                const index = (y * previewData.width + x) * 4;
-
-                const r = previewData.data[index];
-                const g = previewData.data[index + 1];
-                const b = previewData.data[index + 2];
-                const a = previewData.data[index + 3] / 255;
-
-                const color = `rgba(${r},${g},${b},${a})`;
-
-                return (
-                  <div
-                    key={`${rowIndex}-${colIndex}`}
-                    onClick={() => handleBlockClick(colIndex, rowIndex)}
-                    style={{
-                      width: blockSize,
-                      height: blockSize,
-                      backgroundColor: color,
-                      border: "1px solid #ddd", // 그리드 선 그리기
-                      cursor: "pointer",
-                    }}
-                  />
-                );
-              })
-            )}
-          </div>
+          />
         </TransformComponent>
       </TransformWrapper>
     );
