@@ -13,6 +13,7 @@ const CanvasView: React.FC = () => {
     }[]
   >([]);
   const [nextId, setNextId] = useState(0);
+  const [previewData, setPreviewData] = useState<ImageData | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const selectedImageRef = useRef<number | null>(null);
   const dragStartPosRef = useRef<{ x: number; y: number } | null>(null);
@@ -75,7 +76,11 @@ const CanvasView: React.FC = () => {
         { name: "top-left", x: img.x - 5, y: img.y - 5 },
         { name: "top-right", x: img.x + img.width - 5, y: img.y - 5 },
         { name: "bottom-left", x: img.x - 5, y: img.y + img.height - 5 },
-        { name: "bottom-right", x: img.x + img.width - 5, y: img.y + img.height - 5 },
+        {
+          name: "bottom-right",
+          x: img.x + img.width - 5,
+          y: img.y + img.height - 5,
+        },
       ];
 
       for (const corner of corners) {
@@ -211,6 +216,59 @@ const CanvasView: React.FC = () => {
     draw();
   }, [uploadedImages]);
 
+  const handleSave = () => {
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const context = canvas.getContext("2d");
+      if (context) {
+        const imageData = context.getImageData(
+          0,
+          0,
+          canvas.width,
+          canvas.height
+        );
+        setPreviewData(imageData);
+      }
+    }
+  };
+
+  const renderPreview = () => {
+    if (!previewData) return null;
+
+    const blockSize = 10; // 블록 크기 설정
+    const rows = Math.ceil(previewData.height / blockSize);
+    const cols = Math.ceil(previewData.width / blockSize);
+
+    return (
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: `repeat(${cols}, ${blockSize}px)`,
+        }}
+      >
+        {Array.from({ length: rows }).map((_, row) =>
+          Array.from({ length: cols }).map((_, col) => {
+            const pixelIndex =
+              (row * blockSize * previewData.width + col * blockSize) * 4;
+            const r = previewData.data[pixelIndex];
+            const g = previewData.data[pixelIndex + 1];
+            const b = previewData.data[pixelIndex + 2];
+            return (
+              <div
+                key={`${row}-${col}`}
+                style={{
+                  width: blockSize,
+                  height: blockSize,
+                  backgroundColor: `rgb(${r}, ${g}, ${b})`,
+                }}
+              />
+            );
+          })
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="bg-muted rounded-lg p-4 flex flex-col gap-4 relative w-full h-full">
       <h3 className="font-semibold">Canvas</h3>
@@ -240,6 +298,8 @@ const CanvasView: React.FC = () => {
           onMouseUp={handleMouseUp}
         />
       </div>
+      <button onClick={handleSave}>Save</button>
+      <div>{renderPreview()}</div>
     </div>
   );
 };
