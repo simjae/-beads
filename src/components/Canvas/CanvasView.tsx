@@ -14,6 +14,10 @@ const CanvasView: React.FC = () => {
   >([]);
   const [nextId, setNextId] = useState(0);
   const [previewData, setPreviewData] = useState<ImageData | null>(null);
+  const [clickedBlockCoords, setClickedBlockCoords] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const selectedImageRef = useRef<number | null>(null);
   const dragStartPosRef = useRef<{ x: number; y: number } | null>(null);
@@ -252,6 +256,10 @@ const CanvasView: React.FC = () => {
     }
   };
 
+  const handleBlockClick = (x: number, y: number) => {
+    setClickedBlockCoords({ x, y });
+  };
+
   const renderPreview = () => {
     if (!previewData) return null;
 
@@ -264,6 +272,7 @@ const CanvasView: React.FC = () => {
         style={{
           display: "grid",
           gridTemplateColumns: `repeat(${cols}, ${blockSize}px)`,
+          gridTemplateRows: `repeat(${rows}, ${blockSize}px)`,
         }}
       >
         {Array.from({ length: rows }).map((_, rowIndex) =>
@@ -282,11 +291,13 @@ const CanvasView: React.FC = () => {
             return (
               <div
                 key={`${rowIndex}-${colIndex}`}
+                onClick={() => handleBlockClick(colIndex, rowIndex)}
                 style={{
                   width: blockSize,
                   height: blockSize,
                   backgroundColor: color,
                   border: "1px solid #ddd", // 그리드 선 그리기
+                  cursor: "pointer",
                 }}
               />
             );
@@ -327,6 +338,14 @@ const CanvasView: React.FC = () => {
       </div>
       <button onClick={handleSave}>Save</button>
       <div>{renderPreview()}</div>
+      {clickedBlockCoords && (
+        <div>
+          <p>Clicked Block Coordinates:</p>
+          <p>
+            X: {clickedBlockCoords.x}, Y: {clickedBlockCoords.y}
+          </p>
+        </div>
+      )}
     </div>
   );
 };
