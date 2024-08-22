@@ -1,0 +1,30 @@
+name: Deploy RealCollection
+
+on:
+  push:
+    branches:
+      - test-develop
+      - main
+      - staging
+      - develop
+
+jobs:
+  deployment:
+    name: Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Deploy
+        run: |
+          if [ "${GITHUB_REF##*/}" = "test-develop" ]; then
+            curl -X POST ${{ secrets.VERCEL_DEPLOY_TEST_DEVELOP_HOOKS }};
+          elif [ "${GITHUB_REF##*/}" = "main" ]; then
+            curl -X POST ${{ secrets.VERCEL_DEPLOY_MAIN_HOOKS }};
+          elif [ "${GITHUB_REF##*/}" = "staging" ]; then
+            curl -X POST ${{ secrets.VERCEL_DEPLOY_STAGING_HOOKS }};
+          else
+            curl -X POST ${{ secrets.VERCEL_DEPLOY_DEVELOP_HOOKS }};
+          fi
