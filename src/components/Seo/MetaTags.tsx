@@ -7,6 +7,7 @@ interface MetaTagsProps {
   author?: string;
   image?: string;
   url?: string;
+  adKeywords?: string; // 광고 관련 키워드 추가
 }
 
 const MetaTags: React.FC<MetaTagsProps> = ({
@@ -16,12 +17,15 @@ const MetaTags: React.FC<MetaTagsProps> = ({
   author,
   image,
   url,
+  adKeywords,
 }) => {
   return (
     <Head>
       <title>{title}</title>
       <meta name="description" content={description} />
       {keywords && <meta name="keywords" content={keywords} />}
+      {adKeywords && <meta name="adsense-keywords" content={adKeywords} />}{" "}
+      {/* 광고 키워드 */}
       {author && <meta name="author" content={author} />}
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
