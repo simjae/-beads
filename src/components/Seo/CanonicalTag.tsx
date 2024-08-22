@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 
 const CanonicalTag = () => {
   const router = useRouter();
-  const canonicalUrl = `https://beads-git-main-simjaes-projects.vercel.app${router.asPath}`;
+  const canonicalUrl = `https://beads-rouge.vercel.app${router.asPath}`;
 
   return (
     <Head>

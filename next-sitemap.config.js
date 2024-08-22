@@ -1,5 +1,5 @@
 module.exports = {
-  siteUrl: "https://beads-git-main-simjaes-projects.vercel.app/",
+  siteUrl: "https://beads-rouge.vercel.app//",
   generateRobotsTxt: true,
   sitemapSize: 7000,
   changefreq: "daily",
@@ -7,11 +7,11 @@ module.exports = {
   exclude: ["/admin/*", "/login"],
   alternateRefs: [
     {
-      href: "https://beads-git-main-simjaes-projects.vercel.app/",
+      href: "https://beads-rouge.vercel.app//",
       hreflang: "ko",
     },
     {
-      href: "https://beads-git-main-simjaes-projects.vercel.app/en",
+      href: "https://beads-rouge.vercel.app//en",
       hreflang: "en",
     },
   ],

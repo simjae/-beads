@@ -1,4 +1,9 @@
+# *
 User-agent: *
 Allow: /
 
-Sitemap: https://beads-git-main-simjaes-projects.vercel.app/sitemap.xml
+# Host
+Host: https://beads-rouge.vercel.app/
+
+# Sitemaps
+Sitemap: https://beads-rouge.vercel.app/sitemap.xml
