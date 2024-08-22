@@ -1,7 +1,9 @@
 "use client";
 import React, { useEffect, useRef } from "react";
-import { useImageStore } from "@src/stors/useImageStore";
+import { useImageStore } from "@src/stores/useImageStore";
+import dynamic from "next/dynamic";
 
+const MyComponent = dynamic(() => import("./SavePreview"), { ssr: false });
 const SavePreview: React.FC = () => {
   const { savedCanvasState } = useImageStore();
   const canvasRef = useRef<HTMLCanvasElement>(null);

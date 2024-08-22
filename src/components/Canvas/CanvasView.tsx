@@ -1,4 +1,6 @@
-import React, { useState, useRef, useEffect } from "react";
+"use client";
+
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 
 const CanvasView: React.FC = () => {
@@ -61,6 +63,16 @@ const CanvasView: React.FC = () => {
     window.history.replaceState({}, "", newUrl);
   };
 
+  const calculateGridSize = useCallback(() => {
+    const totalArea = canvasWidth * canvasHeight;
+    const blockArea = totalArea / blockCount;
+    return Math.sqrt(blockArea); // 한 블록의 크기를 결정
+  }, [blockCount, canvasWidth, canvasHeight]);
+
+  useEffect(() => {
+    setGridSize(calculateGridSize());
+  }, [calculateGridSize]);
+
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -96,21 +108,13 @@ const CanvasView: React.FC = () => {
           },
         ]);
         setNextId((id) => id + 1);
+
+        draw(); // 이미지가 로드된 후 캔버스를 다시 그립니다.
       };
     }
   };
 
-  const calculateGridSize = () => {
-    const totalArea = canvasWidth * canvasHeight;
-    const blockArea = totalArea / blockCount;
-    return Math.sqrt(blockArea); // 한 블록의 크기를 결정
-  };
-
-  useEffect(() => {
-    setGridSize(calculateGridSize());
-  }, [blockCount, canvasWidth, canvasHeight]);
-
-  const handleMouseDown = (e: any) => {
+  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!draggingEnabled) return;
 
     const { offsetX, offsetY } = e.nativeEvent;
@@ -174,7 +178,7 @@ const CanvasView: React.FC = () => {
     }
   };
 
-  const handleMouseMove = (e: any) => {
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!draggingEnabled) return;
 
     const { offsetX, offsetY } = e.nativeEvent;
@@ -232,39 +236,44 @@ const CanvasView: React.FC = () => {
     resizingRef.current.corner = null;
   };
 
-  const drawGrid = (
-    context: any,
-    canvasWidth: any,
-    canvasHeight: any,
-    gridSize = 20
-  ) => {
-    context.strokeStyle = gridColor;
-    context.lineWidth = 0.5;
+  const drawGrid = useCallback(
+    (
+      context: CanvasRenderingContext2D,
+      canvasWidth: number,
+      canvasHeight: number,
+      gridSize = 20
+    ) => {
+      context.strokeStyle = gridColor;
+      context.lineWidth = 0.5;
 
-    for (let x = 0; x <= canvasWidth; x += gridSize) {
-      context.beginPath();
-      context.moveTo(x, 0);
-      context.lineTo(x, canvasHeight);
-      context.stroke();
-    }
+      for (let x = 0; x <= canvasWidth; x += gridSize) {
+        context.beginPath();
+        context.moveTo(x, 0);
+        context.lineTo(x, canvasHeight);
+        context.stroke();
+      }
 
-    for (let y = 0; y <= canvasHeight; y += gridSize) {
-      context.beginPath();
-      context.moveTo(0, y);
-      context.lineTo(canvasWidth, y);
-      context.stroke();
-    }
-  };
+      for (let y = 0; y <= canvasHeight; y += gridSize) {
+        context.beginPath();
+        context.moveTo(0, y);
+        context.lineTo(canvasWidth, y);
+        context.stroke();
+      }
+    },
+    [gridColor]
+  );
 
-  const draw = () => {
+  const draw = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const context = canvas.getContext("2d");
-    context?.clearRect(0, 0, canvas.width, canvas.height);
+    if (!context) return;
+
+    context.clearRect(0, 0, canvas.width, canvas.height);
 
     // 그리드 그리기
-    drawGrid(context, canvas.width, canvas.height);
+    drawGrid(context, canvas.width, canvas.height, gridSize);
 
     uploadedImages.forEach((img) => {
       const image = new Image();
@@ -273,28 +282,28 @@ const CanvasView: React.FC = () => {
         context.globalAlpha = imageOpacity;
         context.drawImage(image, img.x, img.y, img.width, img.height);
         context.globalAlpha = 1;
+
+        if (img.isSelected) {
+          // 선택된 이미지에 리사이징 핸들 그리기
+          context.fillStyle = "blue";
+          const corners = [
+            { x: img.x - 5, y: img.y - 5 },
+            { x: img.x + img.width - 5, y: img.y - 5 },
+            { x: img.x - 5, y: img.y + img.height - 5 },
+            { x: img.x + img.width - 5, y: img.y + img.height - 5 },
+          ];
+
+          corners.forEach((corner) => {
+            context.fillRect(corner.x, corner.y, 10, 10);
+          });
+        }
       };
-
-      if (img.isSelected) {
-        // 선택된 이미지에 리사이징 핸들 그리기
-        context.fillStyle = "blue";
-        const corners = [
-          { x: img.x - 5, y: img.y - 5 },
-          { x: img.x + img.width - 5, y: img.y - 5 },
-          { x: img.x - 5, y: img.y + img.height - 5 },
-          { x: img.x + img.width - 5, y: img.y + img.height - 5 },
-        ];
-
-        corners.forEach((corner) => {
-          context.fillRect(corner.x, corner.y, 10, 10);
-        });
-      }
     });
-  };
+  }, [uploadedImages, gridSize, gridColor, imageOpacity, drawGrid]);
 
   useEffect(() => {
     draw();
-  }, [uploadedImages, gridSize, gridColor, imageOpacity]);
+  }, [draw]);
 
   const handleSave = () => {
     const canvas = canvasRef.current;
@@ -309,7 +318,7 @@ const CanvasView: React.FC = () => {
         previewContext.drawImage(canvas, 0, 0);
 
         // 그리드 그리기
-        drawGrid(previewContext, canvas.width, canvas.height);
+        drawGrid(previewContext, canvas.width, canvas.height, gridSize);
 
         setPreviewData(previewCanvas);
       }

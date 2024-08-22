@@ -1,5 +1,6 @@
 "use client";
-import { useImageStore } from "@src/stors/useImageStore";
+
+import { useImageStore } from "@src/stores/useImageStore";
 import React from "react";
 import { useDropzone } from "react-dropzone";
 

@@ -31,13 +31,19 @@
 
       // "@styles/*": ["./src/styles/*"],
       "@components/*": ["./src/components/*"],
-      "@stors/*": ["./src/stors/*"],
+      "@stores/*": ["./src/stores/*"],
       "@utils/*": ["./src/utils/*"],
       "@hooks/*": ["./src/hooks/*"],
       "@types/*": ["./src/types/*"],
       "@constants/*": ["./src/constants/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/components/Canvas/CanvasView.tsx"],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "src/components/Canvas/CanvasView.tsx"
+  ],
   "exclude": ["node_modules"]
 }

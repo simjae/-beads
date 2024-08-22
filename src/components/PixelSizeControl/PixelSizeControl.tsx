@@ -1,5 +1,5 @@
 "use client";
-import { useImageStore } from "@src/stors/useImageStore";
+import { useImageStore } from "@src/stores/useImageStore";
 import React from "react";
 
 const PixelSizeControl: React.FC = () => {
