@@ -2,15 +2,15 @@ import React, { useState, useRef, useEffect } from "react";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 
 const CanvasView: React.FC = () => {
-  const [canvasWidth, setCanvasWidth] = useState(800);
-  const [canvasHeight, setCanvasHeight] = useState(600);
+  const [canvasWidth, setCanvasWidth] = useState(1024);
+  const [canvasHeight, setCanvasHeight] = useState(1024);
   const [gridSize, setGridSize] = useState(20);
   const [gridColor, setGridColor] = useState("#ddd");
   const [imageOpacity, setImageOpacity] = useState(1);
   const [minScaleToShowBlocks, setMinScaleToShowBlocks] = useState(0.5);
   const [zoomSpeed, setZoomSpeed] = useState(0.1);
   const [draggingEnabled, setDraggingEnabled] = useState(true);
-
+  const [blockCount, setBlockCount] = useState(1000); // 블록 개수
   const [uploadedImages, setUploadedImages] = useState<
     {
       id: number;
@@ -29,6 +29,7 @@ const CanvasView: React.FC = () => {
   const [clickedBlockCoords, setClickedBlockCoords] = useState<{
     x: number;
     y: number;
+    index: number;
   } | null>(null);
   const [currentScale, setCurrentScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -98,6 +99,16 @@ const CanvasView: React.FC = () => {
       };
     }
   };
+
+  const calculateGridSize = () => {
+    const totalArea = canvasWidth * canvasHeight;
+    const blockArea = totalArea / blockCount;
+    return Math.sqrt(blockArea); // 한 블록의 크기를 결정
+  };
+
+  useEffect(() => {
+    setGridSize(calculateGridSize());
+  }, [blockCount, canvasWidth, canvasHeight]);
 
   const handleMouseDown = (e: any) => {
     if (!draggingEnabled) return;
@@ -322,7 +333,16 @@ const CanvasView: React.FC = () => {
     const blockX = Math.floor(canvasX / gridSize);
     const blockY = Math.floor(canvasY / gridSize);
 
-    setClickedBlockCoords({ x: blockX, y: blockY });
+    // 블록 인덱스 계산
+    const blockIndex = blockY * Math.ceil(canvasWidth / gridSize) + blockX;
+
+    setClickedBlockCoords({ x: blockX, y: blockY, index: blockIndex });
+  };
+
+  const handleResetPreview = () => {
+    setPreviewData(null);
+    setPosition({ x: 0, y: 0 });
+    setCurrentScale(1);
   };
 
   const renderPreview = () => {
@@ -420,11 +440,11 @@ const CanvasView: React.FC = () => {
           />
         </div>
         <div>
-          <label>그리드 크기: </label>
+          <label>블록 개수: </label>
           <input
             type="number"
-            value={gridSize}
-            onChange={(e) => setGridSize(parseInt(e.target.value))}
+            value={blockCount}
+            onChange={(e) => setBlockCount(parseInt(e.target.value))}
           />
         </div>
         <div>
@@ -476,6 +496,10 @@ const CanvasView: React.FC = () => {
         </div>
       </div>
       <input type="file" accept="image/*" onChange={handleImageUpload} />
+      <div className="flex gap-2">
+        <button onClick={handleSave}>Save</button>
+        <button onClick={handleResetPreview}>Reset Preview</button>
+      </div>
       <div
         className="relative bg-muted-foreground/10 rounded-md border-2 border-dashed border-muted-foreground/20"
         style={{
@@ -499,13 +523,14 @@ const CanvasView: React.FC = () => {
           onMouseUp={handleMouseUp}
         />
       </div>
-      <button onClick={handleSave}>Save</button>
+
       <div>{renderPreview()}</div>
       {clickedBlockCoords && (
         <div>
           <p>Clicked Block Coordinates:</p>
           <p>
-            X: {clickedBlockCoords.x}, Y: {clickedBlockCoords.y}
+            X: {clickedBlockCoords.x}, Y: {clickedBlockCoords.y}, Index:{" "}
+            {clickedBlockCoords.index}
           </p>
         </div>
       )}
