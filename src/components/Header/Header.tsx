@@ -1,34 +1,99 @@
-"use client";
-import React, { FC } from "react";
+import React from "react";
 import Link from "next/link";
-import { Icon } from "@components/Icon";
-import { Button } from "@components/Button";
+import { Button } from "@components/Shadcn/button";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuItem,
+} from "@components/Shadcn/dropdown-menu";
+import { Icon } from "../Icon/Icon";
+import { ThemeSwitcher } from "../ThemeSwitcher/ThemeSwitcher";
 
-interface HeaderProps {}
+interface HeaderProps {
+  toggleSidebar: () => void;
+}
 
-export const Header: FC<HeaderProps> = () => {
+const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
   return (
-    <header className="bg-background border-b shadow-sm px-4 py-3 flex items-center justify-between">
-      <Link
-        href="#"
-        className="flex items-center gap-2 font-semibold"
-        prefetch={false}
-      >
-        <Icon type="image" className="w-6 h-6" />
-        Image Layout Tool
+    <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b bg-background px-4 md:px-6">
+      <Link href="#" className="flex items-center gap-2" prefetch={false}>
+        <Icon type="beaker" className="h-6 w-6" />
+        <span className="text-lg font-semibold">Bead Designer</span>
       </Link>
+      <nav className="hidden md:flex items-center gap-4">
+        <Link
+          href="#"
+          className="text-sm font-medium hover:text-primary"
+          prefetch={false}
+        >
+          Home
+        </Link>
+        <Link
+          href="#"
+          className="text-sm font-medium hover:text-primary"
+          prefetch={false}
+        >
+          Designs
+        </Link>
+        <Link
+          href="#"
+          className="text-sm font-medium hover:text-primary"
+          prefetch={false}
+        >
+          Tutorials
+        </Link>
+        <Link
+          href="#"
+          className="text-sm font-medium hover:text-primary"
+          prefetch={false}
+        >
+          Community
+        </Link>
+      </nav>
+
       <div className="flex items-center gap-2">
-        <Button variant="outline">
-          <Icon type="upload" className="w-4 h-4 mr-2" />
-          <label htmlFor="file-upload" className="cursor-pointer">
-            Upload Image
-          </label>
+        <ThemeSwitcher />
+        <Button
+          variant="ghost"
+          size="icon"
+          className="md:hidden"
+          onClick={toggleSidebar}
+        >
+          <Icon type="menu" className="h-5 w-5" />
+          <span className="sr-only">Toggle Menu</span>
         </Button>
-        <Button>
-          <Icon type="save" className="w-4 h-4 mr-2" />
-          Save Layout
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="overflow-hidden rounded-full"
+            >
+              <img
+                src="/placeholder.svg"
+                width={36}
+                height={36}
+                alt="Avatar"
+                className="rounded-full"
+                style={{ aspectRatio: "36/36", objectFit: "cover" }}
+              />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>Profile</DropdownMenuItem>
+            <DropdownMenuItem>Settings</DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>Logout</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   );
 };
+
+export default Header;

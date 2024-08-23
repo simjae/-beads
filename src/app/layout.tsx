@@ -5,6 +5,7 @@ import "../../src/styles/globals.css";
 import MetaTags from "@src/components/Seo/MetaTags";
 import { DM_Sans } from "next/font/google";
 import { Space_Mono } from "next/font/google";
+import Layout from "@src/components/Layout/Layout";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,12 +25,10 @@ const fontBody = Space_Mono({
   variable: "--font-body",
   weight: "400",
 });
-
-export default function RootLayout({
-  children,
-}: Readonly<{
+interface RootLayoutProps {
   children: React.ReactNode;
-}>) {
+}
+const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
   return (
     <html lang="en">
       <MetaTags
@@ -40,7 +39,11 @@ export default function RootLayout({
         image="https://yoursitename.com/og-image.jpg"
         url="https://yoursitename.com"
       />
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <Layout>{children}</Layout>
+      </body>
     </html>
   );
-}
+};
+
+export default RootLayout;

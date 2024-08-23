@@ -1,11 +1,14 @@
+import BeadsContainer from "@src/components/Beads/BeadsContainer";
 import CanvasContainer from "@src/components/Canvas/CanvasContainer";
-import { Header } from "@src/components/Header";
 
 export default function Home() {
   return (
     <div className="flex flex-col h-screen">
-      <Header />
-      <CanvasContainer />
+      {/* <CanvasContainer /> */}
+      <div className="flex gap-6 p-6">
+        {/* <BeadsCanvasView /> */}
+        <BeadsContainer />
+      </div>
     </div>
   );
 }

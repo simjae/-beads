@@ -29,13 +29,13 @@
       "@app/*": ["./src/app/*"],
       "@api/*": ["./src/app/api/*"],
 
-      // "@styles/*": ["./src/styles/*"],
       "@components/*": ["./src/components/*"],
       "@stores/*": ["./src/stores/*"],
       "@utils/*": ["./src/utils/*"],
       "@hooks/*": ["./src/hooks/*"],
       "@types/*": ["./src/types/*"],
-      "@constants/*": ["./src/constants/*"]
+      "@constants/*": ["./src/constants/*"],
+      "@lib/*": ["./src/lib/*"]
     }
   },
   "include": [

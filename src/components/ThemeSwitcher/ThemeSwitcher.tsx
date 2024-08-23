@@ -1,38 +1,49 @@
-// components/ThemeSwitcher.tsx
 import React, { useEffect, useState } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@components/Shadcn/select";
+import { Label } from "@components/Shadcn/label";
 
-const themes = ["theme-dark", "theme-light", "theme-neutral"];
+const themes = ["theme-dark", "theme-light", "theme-neutral", "theme-beige"];
 
 export function ThemeSwitcher() {
-  const [currentTheme, setCurrentTheme] = useState<string>("theme-dark");
+  const [currentTheme, setCurrentTheme] = useState<string>("theme-beige");
 
   useEffect(() => {
+    // 기존 테마를 모두 제거하고 새로운 테마를 추가합니다.
+    themes.forEach((theme) => {
+      document.documentElement.classList.remove(theme);
+    });
     document.documentElement.classList.add(currentTheme);
-    return () => {
-      document.documentElement.classList.remove(currentTheme);
-    };
+    console.log("currentTheme", currentTheme);
   }, [currentTheme]);
 
-  const handleThemeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setCurrentTheme(event.target.value);
+  const handleThemeChange = (theme: string) => {
+    setCurrentTheme(theme);
   };
 
   return (
-    <div>
-      <label htmlFor="theme-select" className="mr-2">
-        Choose Theme:
-      </label>
-      <select
-        id="theme-select"
-        value={currentTheme}
-        onChange={handleThemeChange}
-      >
-        {themes.map((theme) => (
-          <option key={theme} value={theme}>
-            {theme.replace("theme-", "").toUpperCase()}
-          </option>
-        ))}
-      </select>
+    <div className="flex items-center space-x-4">
+      <Label htmlFor="theme-select">Choose Theme:</Label>
+      <Select value={currentTheme} onValueChange={handleThemeChange}>
+        <SelectTrigger id="theme-select" className="w-[180px]">
+          <SelectValue placeholder="Select a theme" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            {themes.map((theme) => (
+              <SelectItem key={theme} value={theme}>
+                {theme.replace("theme-", "").toUpperCase()}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        </SelectContent>
+      </Select>
     </div>
   );
 }
