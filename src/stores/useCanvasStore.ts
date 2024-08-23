@@ -60,15 +60,16 @@ export const useCanvasStore = create<CanvasState>((set) => ({
   updateImageOpacity: (opacity) => set({ imageOpacity: opacity }),
   setPixelCount: (count) => set({ pixelCount: count }), // 추가된 상태 업데이트 메소드
 }));
-
-interface PreviewState {
+interface PreviewStoreState {
   pixelatedData: HTMLCanvasElement | null;
+  colorStats: { [color: string]: number };
   setPixelatedData: (data: HTMLCanvasElement) => void;
-  clearPixelatedData: () => void;
+  setColorStats: (stats: { [color: string]: number }) => void;
 }
 
-export const usePreviewStore = create<PreviewState>((set) => ({
+export const usePreviewStore = create<PreviewStoreState>((set) => ({
   pixelatedData: null,
+  colorStats: {},
   setPixelatedData: (data) => set({ pixelatedData: data }),
-  clearPixelatedData: () => set({ pixelatedData: null }),
+  setColorStats: (stats) => set({ colorStats: stats }),
 }));

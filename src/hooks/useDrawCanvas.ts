@@ -35,56 +35,66 @@ export const useDrawCanvas = (
     [gridColor, gridSize, canvasWidth, canvasHeight]
   );
 
-  const drawCanvas = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+  const drawCanvas = useCallback(
+    (withHandles = true) => {
+      // withHandles 매개변수 추가
+      const canvas = canvasRef.current;
+      if (!canvas) return;
 
-    const context = canvas.getContext("2d");
-    if (!context) return;
+      const context = canvas.getContext("2d");
+      if (!context) return;
 
-    // Create an offscreen canvas for double buffering
-    const offscreenCanvas = document.createElement("canvas");
-    offscreenCanvas.width = canvas.width;
-    offscreenCanvas.height = canvas.height;
-    const offscreenContext = offscreenCanvas.getContext("2d");
-    if (!offscreenContext) return;
+      // Create an offscreen canvas for double buffering
+      const offscreenCanvas = document.createElement("canvas");
+      offscreenCanvas.width = canvas.width;
+      offscreenCanvas.height = canvas.height;
+      const offscreenContext = offscreenCanvas.getContext("2d");
+      if (!offscreenContext) return;
 
-    offscreenContext.clearRect(
-      0,
-      0,
-      offscreenCanvas.width,
-      offscreenCanvas.height
-    );
-    drawGrid(offscreenContext);
+      offscreenContext.clearRect(
+        0,
+        0,
+        offscreenCanvas.width,
+        offscreenCanvas.height
+      );
+      drawGrid(offscreenContext);
 
-    images.forEach((img) => {
-      const image = new Image();
-      image.src = img.src;
+      images.forEach((img) => {
+        const image = new Image();
+        image.src = img.src;
 
-      image.onload = () => {
-        offscreenContext.globalAlpha = imageOpacity;
-        offscreenContext.drawImage(image, img.x, img.y, img.width, img.height);
-        offscreenContext.globalAlpha = 1;
+        image.onload = () => {
+          offscreenContext.globalAlpha = imageOpacity;
+          offscreenContext.drawImage(
+            image,
+            img.x,
+            img.y,
+            img.width,
+            img.height
+          );
+          offscreenContext.globalAlpha = 1;
 
-        if (img.isSelected) {
-          offscreenContext.fillStyle = "blue";
-          const corners = [
-            { x: img.x - 5, y: img.y - 5 },
-            { x: img.x + img.width - 5, y: img.y - 5 },
-            { x: img.x - 5, y: img.y + img.height - 5 },
-            { x: img.x + img.width - 5, y: img.y + img.height - 5 },
-          ];
+          if (img.isSelected && withHandles) {
+            offscreenContext.fillStyle = "blue";
+            const corners = [
+              { x: img.x - 5, y: img.y - 5 },
+              { x: img.x + img.width - 5, y: img.y - 5 },
+              { x: img.x - 5, y: img.y + img.height - 5 },
+              { x: img.x + img.width - 5, y: img.y + img.height - 5 },
+            ];
 
-          corners.forEach((corner) => {
-            offscreenContext.fillRect(corner.x, corner.y, 10, 10);
-          });
-        }
+            corners.forEach((corner) => {
+              offscreenContext.fillRect(corner.x, corner.y, 10, 10);
+            });
+          }
 
-        context.clearRect(0, 0, canvas.width, canvas.height);
-        context.drawImage(offscreenCanvas, 0, 0);
-      };
-    });
-  }, [images, gridSize, gridColor, imageOpacity, drawGrid, canvasRef]);
+          context.clearRect(0, 0, canvas.width, canvas.height);
+          context.drawImage(offscreenCanvas, 0, 0);
+        };
+      });
+    },
+    [images, gridSize, gridColor, imageOpacity, drawGrid, canvasRef]
+  );
 
   return drawCanvas;
 };

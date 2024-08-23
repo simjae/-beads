@@ -1,11 +1,12 @@
+// useCanvas.ts
 import { useCanvasStore, usePreviewStore } from "@src/stores/useCanvasStore";
 import { useRef, useCallback } from "react";
 import { useImageDragAndResize } from "./useImageDragAndResize";
 import { useDrawCanvas } from "./useDrawCanvas";
 
 export const useCanvas = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
-  const { canvasWidth, canvasHeight } = useCanvasStore();
-  const { setPixelatedData } = usePreviewStore();
+  const { canvasWidth, canvasHeight, gridSize } = useCanvasStore();
+  const { setPixelatedData, setColorStats } = usePreviewStore();
 
   const drawCanvas = useDrawCanvas(canvasRef);
   const { handleMouseDown, handleMouseMove, handleMouseUp } =
@@ -21,12 +22,16 @@ export const useCanvas = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
     const originalCanvas = canvasRef.current;
     if (!originalCanvas) return;
 
+    drawCanvas(false); // 리사이징 핸들 제외하고 캔버스 그림
+
     context.drawImage(originalCanvas, 0, 0);
 
     const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
     const data = imageData.data;
 
     const pixelSize = 20; // 고정된 블록 크기
+
+    const colorCount: { [color: string]: number } = {};
 
     for (let y = 0; y < canvas.height; y += pixelSize) {
       for (let x = 0; x < canvas.width; x += pixelSize) {
@@ -51,13 +56,29 @@ export const useCanvas = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
         g = Math.floor(g / count);
         b = Math.floor(b / count);
 
-        context.fillStyle = `rgb(${r},${g},${b})`;
+        const color = `rgb(${r},${g},${b})`;
+
+        if (colorCount[color]) {
+          colorCount[color]++;
+        } else {
+          colorCount[color] = 1;
+        }
+
+        context.fillStyle = color;
         context.fillRect(x, y, pixelSize, pixelSize);
       }
     }
 
     setPixelatedData(canvas);
-  }, [canvasWidth, canvasHeight, canvasRef, setPixelatedData]);
+    setColorStats(colorCount); // 색상별 픽셀 수를 저장
+  }, [
+    canvasWidth,
+    canvasHeight,
+    canvasRef,
+    setPixelatedData,
+    drawCanvas,
+    setColorStats,
+  ]);
 
   return {
     drawCanvas,
