@@ -17,6 +17,7 @@ interface CanvasState {
   gridSize: number;
   gridColor: string;
   imageOpacity: number;
+  pixelCount: number; // 추가된 상태
   addImage: (image: ImageState) => void;
   updateImage: (id: number, updatedImage: Partial<ImageState>) => void;
   selectImage: (id: number) => void;
@@ -25,6 +26,7 @@ interface CanvasState {
   updateGridSize: (size: number) => void;
   updateGridColor: (color: string) => void;
   updateImageOpacity: (opacity: number) => void;
+  setPixelCount: (count: number) => void; // 추가된 메소드
 }
 
 export const useCanvasStore = create<CanvasState>((set) => ({
@@ -34,6 +36,7 @@ export const useCanvasStore = create<CanvasState>((set) => ({
   gridSize: 20,
   gridColor: "#ddd",
   imageOpacity: 1,
+  pixelCount: 100, // 기본값을 100피스로 설정
   addImage: (image) => set((state) => ({ images: [...state.images, image] })),
   updateImage: (id, updatedImage) =>
     set((state) => ({
@@ -55,6 +58,7 @@ export const useCanvasStore = create<CanvasState>((set) => ({
   updateGridSize: (size) => set({ gridSize: size }),
   updateGridColor: (color) => set({ gridColor: color }),
   updateImageOpacity: (opacity) => set({ imageOpacity: opacity }),
+  setPixelCount: (count) => set({ pixelCount: count }), // 추가된 상태 업데이트 메소드
 }));
 
 interface PreviewState {

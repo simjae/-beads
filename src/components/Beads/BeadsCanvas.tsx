@@ -2,13 +2,21 @@
 
 import { useCanvas } from "@src/hooks/useCanvas";
 import { useCanvasStore } from "@src/stores/useCanvasStore";
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { Input } from "@components/Shadcn/input";
 import { Button } from "@components/Shadcn/button";
-const BizCanvas: React.FC = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { canvasWidth, canvasHeight, addImage, clearImages } = useCanvasStore();
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@components/Shadcn/select";
 
+const BeadsCanvas: React.FC = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { canvasWidth, canvasHeight, addImage, clearImages, setPixelCount } =
+    useCanvasStore();
   const {
     drawCanvas,
     handleMouseDown,
@@ -16,6 +24,8 @@ const BizCanvas: React.FC = () => {
     handleMouseUp,
     pixelateImage,
   } = useCanvas(canvasRef);
+
+  const [selectedPixelCount, setSelectedPixelCount] = useState(100); // Default pixel count
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -49,12 +59,17 @@ const BizCanvas: React.FC = () => {
   };
 
   const handleSave = () => {
-    pixelateImage();
+    setPixelCount(selectedPixelCount); // Update pixel count in store
+    pixelateImage(); // Apply pixelation with the selected pixel count
   };
 
   const handleClear = () => {
     clearImages();
     drawCanvas();
+  };
+
+  const handlePixelCountChange = (value: string) => {
+    setSelectedPixelCount(parseInt(value, 10));
   };
 
   useEffect(() => {
@@ -79,13 +94,29 @@ const BizCanvas: React.FC = () => {
           accept="image/*"
           onChange={handleImageUpload}
         />
-        <Button onClick={handleSave}>Save</Button>
-        <Button variant="outline" onClick={handleClear}>
-          Clear
-        </Button>
+        <div className="flex items-center space-x-2">
+          <Select
+            value={selectedPixelCount.toString()}
+            onValueChange={handlePixelCountChange}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select pixel count" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="5">5 피스</SelectItem>
+              <SelectItem value="10">200 피스</SelectItem>
+              <SelectItem value="20">3000 피스</SelectItem>
+              <SelectItem value="30">10000 피스</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button onClick={handleSave}>Save</Button>
+          <Button variant="outline" onClick={handleClear}>
+            Clear
+          </Button>
+        </div>
       </div>
     </div>
   );
 };
 
-export default BizCanvas;
+export default BeadsCanvas;

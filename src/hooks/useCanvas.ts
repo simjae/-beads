@@ -64,7 +64,6 @@ export const useCanvas = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
       const image = new Image();
       image.src = img.src;
 
-      // Load image and draw it when it's fully loaded
       image.onload = () => {
         offscreenContext.globalAlpha = imageOpacity;
         offscreenContext.drawImage(image, img.x, img.y, img.width, img.height);
@@ -84,13 +83,8 @@ export const useCanvas = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
           });
         }
 
-        // Once the offscreen drawing is done, draw it to the main canvas
         context.clearRect(0, 0, canvas.width, canvas.height);
         context.drawImage(offscreenCanvas, 0, 0);
-      };
-
-      image.onerror = () => {
-        console.error(`Failed to load image: ${img.src}`);
       };
     });
   }, [images, gridSize, gridColor, imageOpacity, drawGrid, canvasRef]);
@@ -209,15 +203,17 @@ export const useCanvas = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
     const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
     const data = imageData.data;
 
-    for (let y = 0; y < canvas.height; y += gridSize) {
-      for (let x = 0; x < canvas.width; x += gridSize) {
+    const pixelSize = 20; // 고정된 블록 크기
+
+    for (let y = 0; y < canvas.height; y += pixelSize) {
+      for (let x = 0; x < canvas.width; x += pixelSize) {
         let r = 0,
           g = 0,
           b = 0,
           count = 0;
 
-        for (let yy = 0; yy < gridSize; yy++) {
-          for (let xx = 0; xx < gridSize; xx++) {
+        for (let yy = 0; yy < pixelSize; yy++) {
+          for (let xx = 0; xx < pixelSize; xx++) {
             const pixelIndex = ((y + yy) * canvas.width + (x + xx)) * 4;
             if (pixelIndex < data.length) {
               r += data[pixelIndex];
@@ -233,12 +229,12 @@ export const useCanvas = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
         b = Math.floor(b / count);
 
         context.fillStyle = `rgb(${r},${g},${b})`;
-        context.fillRect(x, y, gridSize, gridSize);
+        context.fillRect(x, y, pixelSize, pixelSize);
       }
     }
 
     setPixelatedData(canvas);
-  }, [canvasWidth, canvasHeight, gridSize, canvasRef, setPixelatedData]);
+  }, [canvasWidth, canvasHeight, canvasRef, setPixelatedData]);
 
   return {
     drawCanvas,

@@ -2,7 +2,7 @@
 import { usePreviewStore } from "@src/stores/useCanvasStore";
 import React, { useEffect, useRef } from "react";
 
-const BizPreview: React.FC = () => {
+const BeadsPreview: React.FC = () => {
   const { pixelatedData } = usePreviewStore();
   const previewRef = useRef<HTMLCanvasElement>(null);
 
@@ -33,4 +33,4 @@ const BizPreview: React.FC = () => {
   );
 };
 
-export default BizPreview;
+export default BeadsPreview;
