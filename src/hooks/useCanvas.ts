@@ -29,7 +29,7 @@ export const useCanvas = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
     const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
     const data = imageData.data;
 
-    const pixelSize = 20; // 고정된 블록 크기
+    const pixelSize = 50; // 고정된 블록 크기
 
     const colorCount: { [color: string]: number } = {};
 
