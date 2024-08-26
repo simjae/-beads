@@ -25,17 +25,24 @@ const BeadsCanvas: React.FC = () => {
   } = useCanvas(canvasRef);
 
   const [selectedPixelCount, setSelectedPixelCount] = useState(100); // Default pixel count
-  const [canvasSize, setCanvasSize] = useState({
-    width: window.innerWidth - 300,
-    height: window.innerHeight * 0.8,
-  });
+  const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
 
-  const updateCanvasSize = () => {
-    setCanvasSize({
-      width: window.innerWidth - 300,
-      height: window.innerHeight * 0.8,
-    });
-  };
+  // Safely access window object inside useEffect
+  useEffect(() => {
+    const updateCanvasSize = () => {
+      setCanvasSize({
+        width: window.innerWidth - 300,
+        height: window.innerHeight * 0.8,
+      });
+    };
+
+    updateCanvasSize();
+    window.addEventListener("resize", updateCanvasSize);
+
+    return () => {
+      window.removeEventListener("resize", updateCanvasSize);
+    };
+  }, []);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -83,14 +90,10 @@ const BeadsCanvas: React.FC = () => {
   };
 
   useEffect(() => {
-    updateCanvasSize();
-    window.addEventListener("resize", updateCanvasSize);
-    drawCanvas();
-
-    return () => {
-      window.removeEventListener("resize", updateCanvasSize);
-    };
-  }, [drawCanvas]);
+    if (canvasSize.width && canvasSize.height) {
+      drawCanvas();
+    }
+  }, [canvasSize, drawCanvas]);
 
   return (
     <div className="p-4">
