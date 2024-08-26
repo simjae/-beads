@@ -62,6 +62,7 @@ export const useCanvasStore = create<CanvasState>((set) => ({
 }));
 
 interface PreviewStoreState {
+  pixelCount: number;
   pixelatedData: HTMLCanvasElement | null;
   colorStats: { [color: string]: number };
   beadPattern: string[][]; // 단순화된 패턴 상태 추가
@@ -71,6 +72,7 @@ interface PreviewStoreState {
 }
 
 export const usePreviewStore = create<PreviewStoreState>((set) => ({
+  pixelCount: 100,
   pixelatedData: null,
   colorStats: {},
   beadPattern: [], // 초기 상태
