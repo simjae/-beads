@@ -11,7 +11,7 @@ const BeadsContainer: React.FC = () => {
 
   return (
     <TooltipProvider>
-      <div style={{ display: "flex", flexDirection: "row", gap: "20px" }}>
+      <div className="flex flex-col">
         <div style={{ flex: 1 }}>
           <h2>Beads Canvas</h2>
           <BeadsCanvas />

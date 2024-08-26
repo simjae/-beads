@@ -15,8 +15,7 @@ import {
 
 const BeadsCanvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { canvasWidth, canvasHeight, addImage, clearImages, setPixelCount } =
-    useCanvasStore();
+  const { addImage, clearImages, setPixelCount } = useCanvasStore();
   const {
     drawCanvas,
     handleMouseDown,
@@ -26,6 +25,17 @@ const BeadsCanvas: React.FC = () => {
   } = useCanvas(canvasRef);
 
   const [selectedPixelCount, setSelectedPixelCount] = useState(100); // Default pixel count
+  const [canvasSize, setCanvasSize] = useState({
+    width: window.innerWidth - 300,
+    height: window.innerHeight * 0.8,
+  });
+
+  const updateCanvasSize = () => {
+    setCanvasSize({
+      width: window.innerWidth - 300,
+      height: window.innerHeight * 0.8,
+    });
+  };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -37,10 +47,10 @@ const BeadsCanvas: React.FC = () => {
 
         image.onload = () => {
           const aspectRatio = image.width / image.height;
-          let newWidth = canvasWidth / 4;
+          let newWidth = canvasSize.width / 4;
           let newHeight = newWidth / aspectRatio;
-          const newX = (canvasWidth - newWidth) / 2;
-          const newY = (canvasHeight - newHeight) / 2;
+          const newX = (canvasSize.width - newWidth) / 2;
+          const newY = (canvasSize.height - newHeight) / 2;
 
           addImage({
             id: Date.now(),
@@ -73,16 +83,22 @@ const BeadsCanvas: React.FC = () => {
   };
 
   useEffect(() => {
+    updateCanvasSize();
+    window.addEventListener("resize", updateCanvasSize);
     drawCanvas();
+
+    return () => {
+      window.removeEventListener("resize", updateCanvasSize);
+    };
   }, [drawCanvas]);
 
   return (
     <div className="p-4">
       <canvas
         ref={canvasRef}
-        width={canvasWidth}
-        height={canvasHeight}
-        className="border border-gray-300 rounded-md"
+        width={canvasSize.width}
+        height={canvasSize.height}
+        className="border border-black-300 rounded-md"
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
@@ -103,10 +119,14 @@ const BeadsCanvas: React.FC = () => {
               <SelectValue placeholder="Select pixel count" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="5">5 피스</SelectItem>
-              <SelectItem value="10">200 피스</SelectItem>
-              <SelectItem value="20">3000 피스</SelectItem>
-              <SelectItem value="30">10000 피스</SelectItem>
+              <SelectItem value="100">100 칸</SelectItem>
+              <SelectItem value="500">500 칸</SelectItem>
+              <SelectItem value="1000">1000 칸</SelectItem>
+              <SelectItem value="2000">2000 칸</SelectItem>
+              <SelectItem value="5000">5000 칸</SelectItem>
+              <SelectItem value="10000">10000 칸</SelectItem>
+              <SelectItem value="20000">20000 칸</SelectItem>
+              <SelectItem value="50000">50000 칸</SelectItem>
             </SelectContent>
           </Select>
           <Button onClick={handleSave}>Save</Button>

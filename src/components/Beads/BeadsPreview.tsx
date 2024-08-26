@@ -1,11 +1,12 @@
 "use client";
 import { usePreviewStore } from "@src/stores/useCanvasStore";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import ColorStats from "@components/ColorStats/ColorStats";
 import { TooltipProvider } from "@components/Shadcn/tooltip";
 import { colorQuantization } from "@src/lib/colorQuantization";
 import { generateBeadPattern } from "@src/lib/generateBeadPattern";
 import { Button } from "../Button";
+
 const BeadsPreview: React.FC = () => {
   const { pixelatedData, setBeadPattern } = usePreviewStore();
   const previewRef = useRef<HTMLCanvasElement>(null);
@@ -14,16 +15,28 @@ const BeadsPreview: React.FC = () => {
     if (pixelatedData && previewRef.current) {
       const previewContext = previewRef.current.getContext("2d");
       if (previewContext) {
-        previewContext.clearRect(
+        const canvas = previewRef.current;
+
+        // 캔버스 크기를 이미지 크기와 일치시킴
+        canvas.width = pixelatedData.width;
+        canvas.height = pixelatedData.height;
+
+        // 캔버스를 흰색으로 채우기
+        previewContext.fillStyle = "#ffffff";
+        previewContext.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 이미지 그리기
+        previewContext.drawImage(
+          pixelatedData,
           0,
           0,
-          previewRef.current.width,
-          previewRef.current.height
+          canvas.width,
+          canvas.height
         );
-        previewContext.drawImage(pixelatedData, 0, 0);
       }
     }
   }, [pixelatedData]);
+
   const handleSimplify = () => {
     if (previewRef.current) {
       const previewContext = previewRef.current.getContext("2d");
@@ -39,7 +52,6 @@ const BeadsPreview: React.FC = () => {
 
         // 비즈 패턴 생성
         const pattern = generateBeadPattern(simplifiedData);
-        console.log(pattern);
         setBeadPattern(pattern);
       }
     }
