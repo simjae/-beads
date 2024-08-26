@@ -31,7 +31,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
 
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-30 w-64 bg-background p-4 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${
+      className={` h-screen fixed inset-y-0  left-0 z-30 w-64 bg-background p-4 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${
         isOpen ? "translate-x-0" : "-translate-x-full"
       } md:flex md:flex-col md:transform-none md:border-r`}
     >
@@ -89,9 +89,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
       </div>
 
       {/* Additional Sidebar Sections */}
-      <ColorPalette />
+      {/* <ColorPalette />
       <BeadTypes />
-      <MyDesigns />
+      <MyDesigns /> */}
     </aside>
   );
 };

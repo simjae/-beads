@@ -11,6 +11,7 @@ import {
 } from "@components/Shadcn/dropdown-menu";
 import { Icon } from "../Icon/Icon";
 import { ThemeSwitcher } from "../ThemeSwitcher/ThemeSwitcher";
+import { BeakerIcon } from "lucide-react";
 
 interface HeaderProps {
   toggleSidebar: () => void;
@@ -23,34 +24,13 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
         <Icon type="beaker" className="h-6 w-6" />
         <span className="text-lg font-semibold">Bead Designer</span>
       </Link>
-      <nav className="hidden md:flex items-center gap-4">
+      <nav className="hidden md:flex items-center gap-20">
         <Link
-          href="#"
-          className="text-sm font-medium hover:text-primary"
-          prefetch={false}
-        >
-          Home
-        </Link>
-        <Link
-          href="#"
-          className="text-sm font-medium hover:text-primary"
+          href="playground"
+          className="text-sm font-medium hover:text-primary hover:underline underline-offset-4"
           prefetch={false}
         >
           Designs
-        </Link>
-        <Link
-          href="#"
-          className="text-sm font-medium hover:text-primary"
-          prefetch={false}
-        >
-          Tutorials
-        </Link>
-        <Link
-          href="#"
-          className="text-sm font-medium hover:text-primary"
-          prefetch={false}
-        >
-          Community
         </Link>
       </nav>
 
@@ -65,7 +45,7 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
           <Icon type="menu" className="h-5 w-5" />
           <span className="sr-only">Toggle Menu</span>
         </Button>
-        <DropdownMenu>
+        {/* <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
@@ -90,7 +70,7 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
             <DropdownMenuSeparator />
             <DropdownMenuItem>Logout</DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>
+        </DropdownMenu> */}
       </div>
     </header>
   );
