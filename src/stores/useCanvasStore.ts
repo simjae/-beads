@@ -18,6 +18,11 @@ interface CanvasState {
   gridColor: string;
   imageOpacity: number;
   pixelCount: number;
+  pixelatedData: HTMLCanvasElement | null;
+  colorStats: { [color: string]: number };
+  beadPattern: string[][]; // 단순화된 패턴 상태 추가
+  simplifiedImageData: ImageData | null;
+
   addImage: (image: ImageState) => void;
   updateImage: (id: number, updatedImage: Partial<ImageState>) => void;
   selectImage: (id: number) => void;
@@ -27,6 +32,11 @@ interface CanvasState {
   updateGridColor: (color: string) => void;
   updateImageOpacity: (opacity: number) => void;
   setPixelCount: (count: number) => void;
+
+  setPixelatedData: (data: HTMLCanvasElement | null) => void;
+  setColorStats: (stats: { [color: string]: number }) => void;
+  setBeadPattern: (pattern: string[][]) => void; // 단순화된 패턴 설정 메소드 추가
+  setSimplifiedImageData: (data: ImageData | null) => void;
 }
 
 export const useCanvasStore = create<CanvasState>((set) => ({
@@ -37,6 +47,11 @@ export const useCanvasStore = create<CanvasState>((set) => ({
   gridColor: "#ddd",
   imageOpacity: 1,
   pixelCount: 100,
+  pixelatedData: null,
+  colorStats: {},
+  beadPattern: [], // 초기 상태
+  simplifiedImageData: null,
+
   addImage: (image) => set((state) => ({ images: [...state.images, image] })),
   updateImage: (id, updatedImage) =>
     set((state) => ({
@@ -59,41 +74,9 @@ export const useCanvasStore = create<CanvasState>((set) => ({
   updateGridColor: (color) => set({ gridColor: color }),
   updateImageOpacity: (opacity) => set({ imageOpacity: opacity }),
   setPixelCount: (count) => set({ pixelCount: count }),
+
+  setPixelatedData: (data) => set({ pixelatedData: data || null }),
+  setColorStats: (stats) => set({ colorStats: stats || {} }),
+  setBeadPattern: (pattern) => set({ beadPattern: pattern || [] }),
+  setSimplifiedImageData: (data) => set({ simplifiedImageData: data || null }),
 }));
-
-interface PreviewStoreState {
-  pixelCount: number;
-  pixelatedData: HTMLCanvasElement | null;
-  colorStats: { [color: string]: number };
-  beadPattern: string[][]; // 단순화된 패턴 상태 추가
-  setPixelatedData: (data: HTMLCanvasElement | null) => void;
-  setColorStats: (stats: { [color: string]: number }) => void;
-  setBeadPattern: (pattern: string[][]) => void; // 단순화된 패턴 설정 메소드 추가
-}
-
-export const usePreviewStore = create<PreviewStoreState>((set) => ({
-  pixelCount: 100,
-  pixelatedData: null,
-  colorStats: {},
-  beadPattern: [], // 초기 상태
-  setPixelatedData: (data) => set({ pixelatedData: data || null }), // null 체크
-  setColorStats: (stats) => set({ colorStats: stats || {} }), // null 체크
-  setBeadPattern: (pattern) => set({ beadPattern: pattern || [] }), // null 체크
-}));
-
-interface SimplifiedCanvasState {
-  simplifiedImageData: ImageData | null;
-  beadPattern: string[][]; // 단순화된 패턴 상태
-  setSimplifiedImageData: (data: ImageData | null) => void;
-  setBeadPattern: (pattern: string[][]) => void; // 단순화된 패턴 설정 메소드 추가
-}
-
-export const useSimplifiedCanvasStore = create<SimplifiedCanvasState>(
-  (set) => ({
-    simplifiedImageData: null,
-    beadPattern: [], // 초기 상태
-    setSimplifiedImageData: (data) =>
-      set({ simplifiedImageData: data || null }), // null 체크
-    setBeadPattern: (pattern) => set({ beadPattern: pattern || [] }), // null 체크
-  })
-);

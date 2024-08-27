@@ -2,12 +2,12 @@
 import React, { useState } from "react";
 import BeadsCanvas from "./BeadsCanvas";
 import BeadsPreview from "./BeadsPreview";
-import { usePreviewStore } from "@src/stores/useCanvasStore";
 import SimplifiedBeadsPreview from "./SimplifiedBeadsPreview";
 import { TooltipProvider } from "@components/Shadcn/tooltip";
+import { useCanvasStore } from "@src/stores/useCanvasStore";
 
 const BeadsContainer: React.FC = () => {
-  const { beadPattern } = usePreviewStore();
+  const { beadPattern } = useCanvasStore();
 
   return (
     <TooltipProvider>

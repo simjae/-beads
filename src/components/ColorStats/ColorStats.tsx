@@ -1,5 +1,5 @@
 import React from "react";
-import { usePreviewStore } from "@src/stores/useCanvasStore";
+import { useCanvasStore } from "@src/stores/useCanvasStore";
 import {
   Tooltip,
   TooltipTrigger,
@@ -7,7 +7,7 @@ import {
 } from "@components/Shadcn/tooltip";
 
 const ColorStats: React.FC = () => {
-  const { colorStats } = usePreviewStore();
+  const { colorStats } = useCanvasStore();
 
   const colorEntries = Object.entries(colorStats);
 

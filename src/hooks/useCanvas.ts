@@ -1,11 +1,16 @@
-import { useCanvasStore, usePreviewStore } from "@src/stores/useCanvasStore";
+import { useCanvasStore } from "@src/stores/useCanvasStore";
 import { useCallback } from "react";
 import { useImageDragAndResize } from "./useImageDragAndResize";
 import { useDrawCanvas } from "./useDrawCanvas";
 
 export const useCanvas = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
-  const { canvasWidth, canvasHeight, pixelCount } = useCanvasStore();
-  const { setPixelatedData, setColorStats } = usePreviewStore();
+  const {
+    canvasWidth,
+    canvasHeight,
+    pixelCount,
+    setPixelatedData,
+    setColorStats,
+  } = useCanvasStore();
 
   const drawCanvas = useDrawCanvas(canvasRef);
   const { handleMouseDown, handleMouseMove, handleMouseUp } =
@@ -16,15 +21,25 @@ export const useCanvas = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
     const originalCanvas = canvasRef.current;
     if (!originalCanvas) return;
 
+    // 캔버스의 너비와 높이
+    const width = originalCanvas.width;
+    const height = originalCanvas.height;
+
     // 한 변의 그리드 개수 계산
     const totalPixels = Math.sqrt(pixelCount);
-    const gridSize = Math.min(
-      Math.floor(originalCanvas.width / totalPixels),
-      Math.floor(originalCanvas.height / totalPixels)
-    );
+    const gridSizeX = Math.floor(width / totalPixels);
+    const gridSizeY = Math.floor(height / totalPixels);
 
-    canvas.width = originalCanvas.width;
-    canvas.height = originalCanvas.height;
+    // 그리드 크기를 정확히 픽셀 카운트에 맞추기 위해, 가로/세로 칸 수 계산
+    const numColumns = Math.floor(width / gridSizeX);
+    const numRows = Math.floor(height / gridSizeY);
+
+    // 그리드 칸 수가 정확히 픽셀 카운트와 일치하도록 조정
+    const adjustedGridSizeX = width / numColumns;
+    const adjustedGridSizeY = height / numRows;
+
+    canvas.width = width;
+    canvas.height = height;
     const context = canvas.getContext("2d");
     if (!context) return;
 
@@ -41,16 +56,21 @@ export const useCanvas = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
 
     const colorCount: { [color: string]: number } = {};
 
-    for (let y = 0; y < canvas.height; y += gridSize) {
-      for (let x = 0; x < canvas.width; x += gridSize) {
+    for (let y = 0; y < numRows; y++) {
+      for (let x = 0; x < numColumns; x++) {
         let r = 0,
           g = 0,
           b = 0,
           count = 0;
 
-        for (let yy = 0; yy < gridSize; yy++) {
-          for (let xx = 0; xx < gridSize; xx++) {
-            const pixelIndex = ((y + yy) * canvas.width + (x + xx)) * 4;
+        const startX = Math.floor(x * adjustedGridSizeX);
+        const startY = Math.floor(y * adjustedGridSizeY);
+        const endX = Math.floor((x + 1) * adjustedGridSizeX);
+        const endY = Math.floor((y + 1) * adjustedGridSizeY);
+
+        for (let yy = startY; yy < endY; yy++) {
+          for (let xx = startX; xx < endX; xx++) {
+            const pixelIndex = (yy * width + xx) * 4;
             if (pixelIndex < data.length) {
               r += data[pixelIndex];
               g += data[pixelIndex + 1];
@@ -74,11 +94,16 @@ export const useCanvas = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
 
         // 픽셀 영역 그리기
         context.fillStyle = color;
-        context.fillRect(x, y, gridSize, gridSize);
+        context.fillRect(startX, startY, adjustedGridSizeX, adjustedGridSizeY);
 
         // 픽셀 테두리를 검은색으로 그리기
         context.strokeStyle = "#000000";
-        context.strokeRect(x, y, gridSize, gridSize);
+        context.strokeRect(
+          startX,
+          startY,
+          adjustedGridSizeX,
+          adjustedGridSizeY
+        );
       }
     }
 

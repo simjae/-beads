@@ -1,10 +1,10 @@
 // SimplifiedBeadsPreview.tsx
 "use client";
+import { useCanvasStore } from "@src/stores/useCanvasStore";
 import React, { useEffect, useRef } from "react";
-import { usePreviewStore } from "@src/stores/useCanvasStore";
 
 const SimplifiedBeadsPreview: React.FC = () => {
-  const { beadPattern } = usePreviewStore();
+  const { beadPattern } = useCanvasStore();
   const previewRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {

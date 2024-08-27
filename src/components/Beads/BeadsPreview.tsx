@@ -1,13 +1,13 @@
 "use client";
-import { usePreviewStore } from "@src/stores/useCanvasStore";
 import React, { useEffect, useRef, useState } from "react";
 import ColorStats from "@components/ColorStats/ColorStats";
 import { colorQuantization } from "@src/lib/colorQuantization";
 import { generateBeadPattern } from "@src/lib/generateBeadPattern";
 import { Button } from "../Button";
+import { useCanvasStore } from "@src/stores/useCanvasStore";
 
 const BeadsPreview: React.FC = () => {
-  const { pixelatedData, setBeadPattern, pixelCount } = usePreviewStore();
+  const { pixelatedData, setBeadPattern, pixelCount } = useCanvasStore();
   const previewRef = useRef<HTMLCanvasElement>(null);
   const [viewMode, setViewMode] = useState("pixelated"); // "zoom", "original", "pixelated", "beadPattern"
   const [gridSize, setGridSize] = useState(0);
