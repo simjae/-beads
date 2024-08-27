@@ -1,35 +1,38 @@
 "use client";
+
 import React, { useState } from "react";
 import BeadsCanvas from "./BeadsCanvas";
 import BeadsPreview from "./BeadsPreview";
-import SimplifiedBeadsPreview from "./SimplifiedBeadsPreview";
-import { TooltipProvider } from "@components/Shadcn/tooltip";
-import { useCanvasStore } from "@src/stores/useCanvasStore";
 
 const BeadsContainer: React.FC = () => {
-  const { beadPattern } = useCanvasStore();
+  const [zoomPanEnabled, setZoomPanEnabled] = useState(true);
+  const [previewZoomPanEnabled, setPreviewZoomPanEnabled] = useState(true);
+  const [previewMode, setPreviewMode] = useState("pixelated");
+
+  const handleZoomPanToggle = (enabled: boolean) => {
+    setZoomPanEnabled(enabled);
+  };
+
+  const handlePreviewZoomPanToggle = (enabled: boolean) => {
+    setPreviewZoomPanEnabled(enabled);
+  };
+
+  const handlePreviewModeChange = (mode: string) => {
+    setPreviewMode(mode);
+  };
 
   return (
-    <TooltipProvider>
-      <div className="flex flex-col">
-        <div style={{ flex: 1 }}>
-          <h2>Beads Canvas</h2>
-          <BeadsCanvas />
-        </div>
-        <div style={{ flex: 1 }}>
-          <h2>Beads Preview</h2>
-          <BeadsPreview />
-        </div>
-        <div style={{ flex: 1 }}>
-          <h2>Simplified Beads Pattern</h2>
-          {beadPattern.length > 0 ? (
-            <SimplifiedBeadsPreview />
-          ) : (
-            <p>No pattern to display</p>
-          )}
-        </div>
+    <div className="flex flex-col h-full">
+      <div className="flex-1">
+        <BeadsCanvas zoomPanEnabled={zoomPanEnabled} />
       </div>
-    </TooltipProvider>
+      <div className="flex-1">
+        <BeadsPreview
+          zoomPanEnabled={previewZoomPanEnabled}
+          previewMode={previewMode}
+        />
+      </div>
+    </div>
   );
 };
 

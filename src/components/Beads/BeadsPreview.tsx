@@ -1,16 +1,29 @@
 "use client";
+
 import React, { useEffect, useRef, useState } from "react";
-import ColorStats from "@components/ColorStats/ColorStats";
 import { colorQuantization } from "@src/lib/colorQuantization";
 import { generateBeadPattern } from "@src/lib/generateBeadPattern";
-import { Button } from "../Button";
 import { useCanvasStore } from "@src/stores/useCanvasStore";
+import { useZoomPanPinch } from "@src/hooks/useZoomPanPinch";
+import { Button } from "../Button";
 
-const BeadsPreview: React.FC = () => {
+interface BeadsPreviewProps {
+  zoomPanEnabled: boolean;
+  previewMode: string;
+}
+
+const BeadsPreview: React.FC<BeadsPreviewProps> = ({
+  zoomPanEnabled,
+  previewMode,
+}) => {
   const { pixelatedData, setBeadPattern, pixelCount } = useCanvasStore();
   const previewRef = useRef<HTMLCanvasElement>(null);
-  const [viewMode, setViewMode] = useState("pixelated"); // "zoom", "original", "pixelated", "beadPattern"
   const [gridSize, setGridSize] = useState(0);
+
+  const { ZoomPanPinchComponent } = useZoomPanPinch({
+    initialScale: 1,
+    zoomSpeed: 0.1,
+  });
 
   useEffect(() => {
     if (pixelatedData && previewRef.current) {
@@ -52,7 +65,7 @@ const BeadsPreview: React.FC = () => {
           previewRef.current.width,
           previewRef.current.height
         );
-        const simplifiedData = colorQuantization(imageData, 16); // 16 colors for simplification
+        const simplifiedData = colorQuantization(imageData, 16);
         previewContext.putImageData(simplifiedData, 0, 0);
 
         const pattern = generateBeadPattern(simplifiedData);
@@ -102,7 +115,7 @@ const BeadsPreview: React.FC = () => {
   };
 
   const renderView = () => {
-    switch (viewMode) {
+    switch (previewMode) {
       case "beadPattern":
         return (
           <canvas
@@ -128,13 +141,25 @@ const BeadsPreview: React.FC = () => {
               overflow: "auto",
             }}
           >
-            <canvas
-              ref={previewRef}
-              className="border border-gray-300 rounded-md"
-              style={{
-                display: "block",
-              }}
-            />
+            {zoomPanEnabled ? (
+              <ZoomPanPinchComponent>
+                <canvas
+                  ref={previewRef}
+                  className="border border-gray-300 rounded-md"
+                  style={{
+                    display: "block",
+                  }}
+                />
+              </ZoomPanPinchComponent>
+            ) : (
+              <canvas
+                ref={previewRef}
+                className="border border-gray-300 rounded-md"
+                style={{
+                  display: "block",
+                }}
+              />
+            )}
           </div>
         );
     }
@@ -142,48 +167,10 @@ const BeadsPreview: React.FC = () => {
 
   return (
     <div className="p-4">
-      <div className="mb-4">
-        <label>
-          <input
-            type="radio"
-            name="viewMode"
-            value="original"
-            checked={viewMode === "original"}
-            onChange={() => setViewMode("original")}
-          />
-          원본 이미지
-        </label>
-        <label className="ml-4">
-          <input
-            type="radio"
-            name="viewMode"
-            value="pixelated"
-            checked={viewMode === "pixelated"}
-            onChange={() => setViewMode("pixelated")}
-          />
-          픽셀화
-        </label>
-        <label className="ml-4">
-          <input
-            type="radio"
-            name="viewMode"
-            value="beadPattern"
-            checked={viewMode === "beadPattern"}
-            onChange={() => {
-              setViewMode("beadPattern");
-              renderBeadPattern();
-            }}
-          />
-          비즈 패턴
-        </label>
-      </div>
-
       {renderView()}
-
       <Button onClick={handleSimplify} className="mt-4">
         Simplify
       </Button>
-      <ColorStats />
     </div>
   );
 };
