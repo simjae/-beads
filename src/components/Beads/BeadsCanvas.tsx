@@ -1,47 +1,30 @@
 "use client";
 
-import { useCanvas } from "@src/hooks/useCanvas";
+import React, { useEffect } from "react";
+import { useBeadsControl } from "@src/hooks/beads/useBeadsControl";
+
 import { useZoomPanPinch } from "@src/hooks/useZoomPanPinch";
-import { useCanvasStore } from "@src/stores/useCanvasStore";
-import React, { useRef, useEffect, useState } from "react";
+import { Card, CardContent } from "@components/Shadcn/card";
+import useResponsiveCanvasSize from "@src/hooks/useResponsiveCanvasSize";
 
-interface BeadsCanvasProps {
-  zoomPanEnabled: boolean;
-}
-
-const BeadsCanvas: React.FC<BeadsCanvasProps> = ({ zoomPanEnabled }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { addImage, clearImages, setPixelCount } = useCanvasStore();
+const BeadsCanvas: React.FC = () => {
   const {
+    zoomPanEnabled,
+    onMouseDown,
+    onMouseMove,
+    onMouseUp,
     drawCanvas,
-    handleMouseDown,
-    handleMouseMove,
-    handleMouseUp,
-    pixelateImage,
-  } = useCanvas(canvasRef);
-
-  const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
+    canvasRef,
+  } = useBeadsControl();
 
   const { ZoomPanPinchComponent } = useZoomPanPinch({
     initialScale: 1,
     zoomSpeed: 0.1,
+    isZoomDisabled: !zoomPanEnabled,
+    isPanDisabled: !zoomPanEnabled,
   });
 
-  useEffect(() => {
-    const updateCanvasSize = () => {
-      setCanvasSize({
-        width: window.innerWidth - 300,
-        height: window.innerHeight * 0.8,
-      });
-    };
-
-    updateCanvasSize();
-    window.addEventListener("resize", updateCanvasSize);
-
-    return () => {
-      window.removeEventListener("resize", updateCanvasSize);
-    };
-  }, []);
+  const canvasSize = useResponsiveCanvasSize();
 
   useEffect(() => {
     if (canvasSize.width && canvasSize.height) {
@@ -50,31 +33,21 @@ const BeadsCanvas: React.FC<BeadsCanvasProps> = ({ zoomPanEnabled }) => {
   }, [canvasSize, drawCanvas]);
 
   return (
-    <div className="p-4">
-      {zoomPanEnabled ? (
+    <Card className="p-4 shadow-md rounded-md max-w-full mx-auto">
+      <CardContent>
         <ZoomPanPinchComponent>
           <canvas
             ref={canvasRef}
             width={canvasSize.width}
             height={canvasSize.height}
-            className="border border-black-300 rounded-md"
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
+            className="border border-gray-300 rounded-md w-full max-w-full"
+            onMouseDown={onMouseDown}
+            onMouseMove={onMouseMove}
+            onMouseUp={onMouseUp}
           />
         </ZoomPanPinchComponent>
-      ) : (
-        <canvas
-          ref={canvasRef}
-          width={canvasSize.width}
-          height={canvasSize.height}
-          className="border border-black-300 rounded-md"
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-        />
-      )}
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 
