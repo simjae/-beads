@@ -9,6 +9,7 @@ export const useImageResizeAndDrag = (drawCanvas: () => void) => {
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const { offsetX, offsetY } = e.nativeEvent;
     resizingRef.current.corner = null;
+    let isCornerClicked = false;
 
     for (let i = images.length - 1; i >= 0; i--) {
       const img = images[i];
@@ -34,14 +35,15 @@ export const useImageResizeAndDrag = (drawCanvas: () => void) => {
         ) {
           resizingRef.current.corner = corner.name; // 리사이징 모드로 전환
           dragStartPosRef.current = { x: offsetX, y: offsetY };
-          console.log(resizingRef);
           selectImage(img.id);
+          isCornerClicked = true;
           return;
         }
       }
 
       // 이미지 영역 클릭 여부 확인
       if (
+        !isCornerClicked && // 모서리가 클릭되지 않은 경우에만
         offsetX > img.x &&
         offsetX < img.x + img.width &&
         offsetY > img.y &&

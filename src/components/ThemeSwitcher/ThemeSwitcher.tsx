@@ -12,7 +12,7 @@ import { Label } from "@components/Shadcn/label";
 const themes = ["theme-dark", "theme-light", "theme-neutral", "theme-beige"];
 
 export function ThemeSwitcher() {
-  const [currentTheme, setCurrentTheme] = useState<string>("theme-beige");
+  const [currentTheme, setCurrentTheme] = useState<string>("theme-light");
 
   useEffect(() => {
     // 기존 테마를 모두 제거하고 새로운 테마를 추가합니다.

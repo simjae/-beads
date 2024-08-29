@@ -37,19 +37,43 @@ const BeadsPreview: React.FC = () => {
           previewRef.current.height
         );
 
-        // 스케일 및 위치에 따라 이미지 다시 그리기
-        context.save();
+        // 흰색 배경에 검은 선 그리기
+        context.fillStyle = "#ffffff"; // 흰색 배경
+        context.fillRect(
+          0,
+          0,
+          previewRef.current.width,
+          previewRef.current.height
+        );
 
-        // 캔버스 중심 기준으로 팬 및 줌 적용
+        // 그리드 그리기
+        context.strokeStyle = "#000000"; // 검은 선
+        context.lineWidth = 0.5;
+        const gridSize = 20; // 원하는 픽셀 크기로 설정
+        for (let x = 0; x <= previewRef.current.width; x += gridSize) {
+          context.beginPath();
+          context.moveTo(x, 0);
+          context.lineTo(x, previewRef.current.height);
+          context.stroke();
+        }
+        for (let y = 0; y <= previewRef.current.height; y += gridSize) {
+          context.beginPath();
+          context.moveTo(0, y);
+          context.lineTo(previewRef.current.width, y);
+          context.stroke();
+        }
+
+        // 이미지 렌더링
+        context.save();
         const canvasMidX = previewRef.current.width / 2;
         const canvasMidY = previewRef.current.height / 2;
 
-        context.translate(canvasMidX, canvasMidY); // 캔버스 중앙으로 이동
-        context.scale(currentScale, currentScale); // 줌 스케일 적용
+        context.translate(canvasMidX, canvasMidY);
+        context.scale(currentScale, currentScale);
         context.translate(
           -canvasMidX + position.x / currentScale,
           -canvasMidY + position.y / currentScale
-        ); // 팬 위치 적용
+        );
 
         context.drawImage(
           pixelatedData,
