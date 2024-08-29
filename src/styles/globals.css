@@ -1,9 +1,57 @@
+/* styles/globals.css */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  :root {
+  .theme-dark {
+    --background: 210 100% 6%;
+    --foreground: 180 100% 90%;
+    --primary: 200 100% 28%;
+    --primary-foreground: 180 100% 90%;
+    --secondary: 203 23% 30%;
+    --secondary-foreground: 180 100% 90%;
+    --accent: 198 70% 50%;
+    --accent-foreground: 185 10% 13%;
+    --destructive: 0 98% 44%;
+    --destructive-foreground: 0 0% 100%;
+    --muted: 200 50% 30%;
+    --muted-foreground: 180 100% 90%;
+    --card: 210 100% 12%;
+    --card-foreground: 180 100% 90%;
+    --popover: 210 100% 15%;
+    --popover-foreground: 180 100% 90%;
+    --border: 210 50% 40%;
+    --input: 210 50% 40%;
+    --ring: 180 100% 90%;
+    --radius: 0rem;
+  }
+
+  .theme-light {
+    --background: 0 0% 85%;
+    --foreground: 0 0% 10%;
+    --primary: 0 0% 80%;
+    --primary-foreground: 0 0% 10%;
+    --secondary: 0 0% 70%;
+    --secondary-foreground: 0 0% 10%;
+    --accent: 240 100% 50%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 32%;
+    --destructive-foreground: 0 0% 98%;
+    --muted: 0 0% 75%;
+    --muted-foreground: 0 0% 10%;
+    --card: 0 0% 95%;
+    --card-foreground: 0 0% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --border: 0 0% 60%;
+    --input: 0 0% 60%;
+    --ring: 0 0% 10%;
+    --radius: 0rem;
+  }
+
+  .theme-neutral {
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
@@ -25,23 +73,43 @@
     --ring: 142 86% 28%;
     --radius: 0.5rem;
   }
-}
+  .theme-beige {
+    --background: 36 39% 88%;
+    --foreground: 36 45% 15%;
+    --primary: 36 45% 70%;
+    --primary-foreground: 36 45% 11%;
+    --secondary: 40 35% 77%;
+    --secondary-foreground: 36 45% 25%;
+    --accent: 36 64% 57%;
+    --accent-foreground: 36 72% 17%;
+    --destructive: 0 84% 37%;
+    --destructive-foreground: 0 0% 98%;
+    --muted: 36 33% 75%;
+    --muted-foreground: 36 45% 25%;
+    --card: 36 46% 82%;
+    --card-foreground: 36 45% 20%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --border: 36 45% 60%;
+    --input: 36 45% 60%;
+    --ring: 36 45% 30%;
+    --radius: 0rem;
+  }
 
-@layer base {
   * {
     @apply border-border;
   }
 
   body {
-    @apply bg-background text-foreground font-body;
+    @apply bg-background text-foreground;
   }
 
-  h1,
+  /* h1,
   h2,
   h3,
   h4,
   h5,
   h6 {
     @apply font-heading;
-  }
+  } */
 }

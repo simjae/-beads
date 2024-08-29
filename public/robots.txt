@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://beads-rouge.vercel.app//
+
+# Sitemaps
+Sitemap: https://beads-rouge.vercel.app/sitemap.xml
