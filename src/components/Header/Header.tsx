@@ -27,11 +27,32 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
         </Link>
         <nav className="hidden md:flex items-center gap-20">
           <Link
+            href="/"
+            className="text-sm font-medium hover:text-primary hover:underline underline-offset-4"
+            prefetch={false}
+          >
+            Home
+          </Link>
+          <Link
             href="playground"
             className="text-sm font-medium hover:text-primary hover:underline underline-offset-4"
             prefetch={false}
           >
-            Designs
+            Playground
+          </Link>
+          <Link
+            href="#"
+            className="text-sm font-medium hover:text-primary hover:underline underline-offset-4"
+            prefetch={false}
+          >
+            Collections
+          </Link>
+          <Link
+            href="#"
+            className="text-sm font-medium hover:text-primary hover:underline underline-offset-4"
+            prefetch={false}
+          >
+            Leaderboard
           </Link>
         </nav>
 
@@ -46,32 +67,32 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
             <Icon type="menu" className="h-5 w-5" />
             <span className="sr-only">Toggle Menu</span>
           </Button>
-          {/* <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="overflow-hidden rounded-full"
-            >
-              <img
-                src="/placeholder.svg"
-                width={36}
-                height={36}
-                alt="Avatar"
-                className="rounded-full"
-                style={{ aspectRatio: "36/36", objectFit: "cover" }}
-              />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Profile</DropdownMenuItem>
-            <DropdownMenuItem>Settings</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Logout</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu> */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="overflow-hidden rounded-full"
+              >
+                <img
+                  src="/placeholder.svg"
+                  width={36}
+                  height={36}
+                  alt="Avatar"
+                  className="rounded-full"
+                  style={{ aspectRatio: "36/36", objectFit: "cover" }}
+                />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>Profile</DropdownMenuItem>
+              <DropdownMenuItem>Settings</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>Logout</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>
