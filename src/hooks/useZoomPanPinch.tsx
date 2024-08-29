@@ -9,8 +9,6 @@ interface UseZoomPanPinchProps {
   onZoomChange?: (scale: number) => void;
   onPanningStop?: (positionX: number, positionY: number) => void;
   onClick?: (x: number, y: number, canvasX: number, canvasY: number) => void;
-  isZoomDisabled?: boolean;
-  isPanDisabled?: boolean;
 }
 
 export const useZoomPanPinch = ({
@@ -21,25 +19,21 @@ export const useZoomPanPinch = ({
   onZoomChange,
   onPanningStop,
   onClick,
-  isZoomDisabled = false,
-  isPanDisabled = false,
 }: UseZoomPanPinchProps) => {
   const [currentScale, setCurrentScale] = useState(initialScale);
   const [position, setPosition] = useState({
     x: initialPositionX,
     y: initialPositionY,
   });
-  console.log("isZoomDisabled:", isZoomDisabled);
-  console.log("isPanDisabled:", isPanDisabled);
+
   const ZoomPanPinchComponent = useCallback(
     ({ children }: { children: React.ReactNode }) => (
       <TransformWrapper
         initialScale={currentScale}
         initialPositionX={position.x}
         initialPositionY={position.y}
-        wheel={{ disabled: isZoomDisabled, step: zoomSpeed }}
-        pinch={{ disabled: isZoomDisabled, step: zoomSpeed }}
-        panning={{ disabled: isPanDisabled }}
+        wheel={{ step: zoomSpeed }}
+        pinch={{ step: zoomSpeed }}
         doubleClick={{ mode: "reset" }}
         minScale={0.1}
         onZoom={(zoom) => {
@@ -57,10 +51,7 @@ export const useZoomPanPinch = ({
           }
         }}
       >
-        <TransformComponent
-          wrapperClass="transform-wrapper"
-          contentClass="transform-content"
-        >
+        <TransformComponent>
           <div
             onClick={(e) => {
               if (onClick && e.currentTarget) {
@@ -80,17 +71,7 @@ export const useZoomPanPinch = ({
         </TransformComponent>
       </TransformWrapper>
     ),
-    [
-      currentScale,
-      position.x,
-      position.y,
-      zoomSpeed,
-      onZoomChange,
-      onPanningStop,
-      onClick,
-      isZoomDisabled,
-      isPanDisabled,
-    ]
+    [currentScale, position.x, position.y, zoomSpeed, onZoomChange, onPanningStop, onClick]
   );
 
   return {

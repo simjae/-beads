@@ -22,9 +22,6 @@ interface CanvasState {
   colorStats: { [color: string]: number };
   beadPattern: string[][]; // 단순화된 패턴 상태 추가
   simplifiedImageData: ImageData | null;
-  zoomPanEnabled: boolean;
-  previewZoomPanEnabled: boolean;
-  previewMode: string;
 
   addImage: (image: ImageState) => void;
   updateImage: (id: number, updatedImage: Partial<ImageState>) => void;
@@ -40,7 +37,6 @@ interface CanvasState {
   setColorStats: (stats: { [color: string]: number }) => void;
   setBeadPattern: (pattern: string[][]) => void; // 단순화된 패턴 설정 메소드 추가
   setSimplifiedImageData: (data: ImageData | null) => void;
-  setPreviewMode: (mode: string) => void;
 }
 
 export const useCanvasStore = create<CanvasState>((set) => ({
@@ -55,9 +51,6 @@ export const useCanvasStore = create<CanvasState>((set) => ({
   colorStats: {},
   beadPattern: [], // 초기 상태
   simplifiedImageData: null,
-  zoomPanEnabled: true,
-  previewZoomPanEnabled: true,
-  previewMode: "pixelated",
 
   addImage: (image) => set((state) => ({ images: [...state.images, image] })),
   updateImage: (id, updatedImage) =>
@@ -86,5 +79,4 @@ export const useCanvasStore = create<CanvasState>((set) => ({
   setColorStats: (stats) => set({ colorStats: stats || {} }),
   setBeadPattern: (pattern) => set({ beadPattern: pattern || [] }),
   setSimplifiedImageData: (data) => set({ simplifiedImageData: data || null }),
-  setPreviewMode: (mode) => set({ previewMode: mode }),
 }));

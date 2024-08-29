@@ -16,14 +16,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const isRootPath = pathname === "/";
   return (
-    <div className="flex flex-col h-screen w-full overflow-hidden">
+    <div className="flex w-full flex-col">
       <Header toggleSidebar={toggleSidebar} />
-      <div className="flex flex-grow h-screen">
+      <div className="flex w-full h-screen">
         {!isRootPath && (
           <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
         )}
-        <div className="flex flex-col flex-grow overflow-auto">
-          {/* overflow-auto 추가하여 스크롤 가능하게 */}
+        <div className="flex flex-col flex-grow">
           <div className="p-4 md:p-6">{children}</div>
         </div>
       </div>
